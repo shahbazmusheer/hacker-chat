@@ -3,7 +3,6 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RED_LINE_TERMINAL</title>
     <style>
         :root {
@@ -16,14 +15,13 @@
         body {
             background-color: var(--bg-black);
             color: var(--primary-red);
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Courier New', monospace;
             margin: 0;
             padding: 20px;
             overflow: hidden;
             text-shadow: var(--glow);
         }
 
-        /* CRT Scanline Effect Overlay */
         body::before {
             content: " ";
             display: block;
@@ -32,33 +30,29 @@
             left: 0;
             bottom: 0;
             right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
-                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
             z-index: 2;
             background-size: 100% 4px, 3px 100%;
             pointer-events: none;
         }
 
-        /* Screen Flicker Animation */
+        #terminal-wrap {
+            border: 2px solid var(--dark-red);
+            padding: 20px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px var(--dark-red);
+            animation: flicker 0.15s infinite;
+        }
+
         @keyframes flicker {
             0% {
-                opacity: 0.97;
+                opacity: 0.98;
             }
 
             5% {
                 opacity: 0.95;
-            }
-
-            10% {
-                opacity: 0.9;
-            }
-
-            15% {
-                opacity: 0.95;
-            }
-
-            20% {
-                opacity: 0.98;
             }
 
             100% {
@@ -66,30 +60,10 @@
             }
         }
 
-        #terminal-wrap {
-            animation: flicker 0.15s infinite;
-            border: 2px solid var(--dark-red);
-            padding: 20px;
-            height: 90vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 0 20px var(--dark-red);
-        }
-
-        #header {
-            border-bottom: 1px solid var(--dark-red);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-            font-size: 0.9em;
-            display: flex;
-            justify-content: space-between;
-        }
-
         #chat-box {
             flex-grow: 1;
             overflow-y: auto;
             margin-bottom: 20px;
-            padding-right: 10px;
         }
 
         .msg {
@@ -106,37 +80,23 @@
         .usr {
             font-weight: bold;
             color: #fff;
-            text-transform: uppercase;
-        }
-
-        .content {
-            color: var(--primary-red);
         }
 
         .input-line {
             display: flex;
             align-items: center;
-            font-size: 1.2em;
-        }
-
-        .prompt {
-            color: var(--primary-red);
-            margin-right: 10px;
-            font-weight: bold;
         }
 
         input {
             background: transparent;
             border: none;
             color: white;
-            font-family: inherit;
-            font-size: inherit;
             outline: none;
             width: 100%;
-            text-shadow: 0 0 5px #fff;
+            font-family: inherit;
+            font-size: 1.2em;
         }
 
-        /* Scrollbar Styling */
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -144,87 +104,81 @@
         ::-webkit-scrollbar-thumb {
             background: var(--dark-red);
         }
-
-        #status-blink {
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0;
-            }
-        }
     </style>
 </head>
 
 <body>
 
     <div id="terminal-wrap">
-        <div id="header">
-            <span>STATUS: <span id="status-blink">ENCRYPTED_UPLINK_STABLE</span></span>
-            <span>LOCATION: [CLASSIFIED]</span>
-            <span>V.1.04-RED</span>
+        <div
+            style="font-size: 0.8em; border-bottom: 1px solid var(--dark-red); margin-bottom: 10px; padding-bottom: 5px;">
+            CMD: [clear-hacker-chat] TO WIPE LOGS | SYSTEM_STATUS: ACTIVE
         </div>
-
         <div id="chat-box">
-            <div class="msg">>> SECURITY PROTOCOL LOADED...</div>
-            <div class="msg">>> ACCESSING SERVER...</div>
             <div id="messages"></div>
         </div>
-
         <div class="input-line">
-            <span class="prompt" id="usr-prompt">USER@ROOT:~$</span>
+            <span id="prompt" style="margin-right:10px; font-weight:bold;">></span>
             <input type="text" id="chat-input" autofocus autocomplete="off">
         </div>
     </div>
 
     <script>
         const alias = prompt("Enter Hacker Handle:") || "GHOST";
-        document.getElementById('usr-prompt').innerText = `${alias.toUpperCase()}@NETWORK:~$`;
+        document.getElementById('prompt').innerText = `${alias.toUpperCase()}@NETWORK:~$`;
 
         async function loadMessages() {
             try {
                 const res = await fetch('/api/messages');
                 const data = await res.json();
                 const container = document.getElementById('messages');
-
                 container.innerHTML = data.map(m => `
                 <div class="msg">
                     <span class="ts">[${new Date(m.created_at).toLocaleTimeString()}]</span>
-                    <span class="usr">${m.sender}:</span> 
-                    <span class="content">${m.content}</span>
-                </div>
-            `).join('');
-
-                const chatBox = document.getElementById('chat-box');
-                chatBox.scrollTop = chatBox.scrollHeight;
+                    <span class="usr">${m.sender}:</span> ${m.content}
+                </div>`).join('');
+                document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
             } catch (e) { }
         }
 
         document.getElementById('chat-input').addEventListener('keypress', async (e) => {
             if (e.key === 'Enter' && e.target.value.trim() !== "") {
-                const content = e.target.value;
+                const cmd = e.target.value.trim();
                 e.target.value = '';
 
+                // SPECIAL COMMAND: CLEAR CHAT
+                if (cmd === "clear-hacker-chat") {
+                    const pass = prompt("SYSTEM OVERRIDE: ENTER AUTHORIZATION CODE");
+                    if (pass && confirm("WARNING: THIS WILL PERMANENTLY WIPE ALL DATABASE LOGS. PROCEED?")) {
+                        const res = await fetch('/api/clear', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ password: pass })
+                        });
+                        const status = await res.json();
+                        if (status.status === "cleared") {
+                            alert("DATABASE WIPED.");
+                            loadMessages();
+                        } else {
+                            alert("ACCESS DENIED: INVALID CODE.");
+                        }
+                    }
+                    return;
+                }
+
+                // REGULAR MESSAGE
                 await fetch('/api/send', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ sender: alias, content: content })
+                    body: JSON.stringify({ sender: alias, content: cmd })
                 });
                 loadMessages();
             }
         });
 
-        setInterval(loadMessages, 2000);
+        setInterval(loadMessages, 2500);
         loadMessages();
     </script>
-
 </body>
 
 </html>

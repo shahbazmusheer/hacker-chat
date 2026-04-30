@@ -216,7 +216,7 @@
             <span id="header-status">UPLINK_OFFLINE</span>
         </div>
         <div id="chat-box"></div>
-        <div style="display: flex; border-top: 1px solid #200; padding-top: 10px;">
+        <div style="display: flex; border-top: 1px solid #200; align-items: center; padding-top: 10px;">
             <span id="prompt" style="margin-right: 10px; font-weight: bold;">></span>
             <input type="text" id="chat-in" style="flex-grow: 1;" autofocus autocomplete="off">
         </div>
@@ -292,7 +292,7 @@
             document.getElementById('login-overlay').classList.add('hidden');
             document.getElementById('header-status').innerText = `NODE: ${user} // TARGET: ${target}`;
             document.getElementById('prompt').innerText = `${user}@${target}:~$`;
-
+            document.getElementById('chat-in').focus();
             notify("UPLINK_ESTABLISHED", "success");
             setInterval(load, 2500);
             load();

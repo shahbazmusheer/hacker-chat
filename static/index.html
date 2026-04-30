@@ -248,9 +248,11 @@
                 style="border: 1px solid #333; margin-bottom: 10px; text-align: center; background: #000; color: #fff;">
             <input type="text" id="target-id" placeholder="TARGET_NODE"
                 style="border: 1px solid #333; text-align: center; background: #000; color: #fff;">
-            <div style="margin: 15px 0;">
-                <label><input type="radio" name="type" value="private" checked> PRIVATE</label> &nbsp;
-                <label><input type="radio" name="type" value="group"> GROUP</label>
+            <div style="margin: 15px 0; display: flex; align-items: center; justify-content: space-evenly;">
+                <label style="display:flex; gap:10px; align-items:base-line;"><input type="radio" name="type"
+                        value="private" checked> PRIVATE</label>
+                <label style="display:flex; gap:10px; align-items:base-line;"><input type="radio" name="type"
+                        value="group"> GROUP</label>
             </div>
             <button class="btn" onclick="connect()" style="width: 100%;">ESTABLISH_UPLINK</button>
         </div>

@@ -329,7 +329,10 @@
             }
         });
 
-        function closeAdmin() { document.getElementById('admin-overlay').classList.add('hidden'); }
+        function closeAdmin() {
+            document.getElementById('admin-overlay').classList.add('hidden');
+            document.getElementById('chat-in').focus()
+        }
 
         async function adminFetch() {
             const u = document.getElementById('adm-user').value, p = document.getElementById('adm-pass').value;

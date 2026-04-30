@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>TERMINAL_CHAT_v1.0</title>
+    <style>
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #chat-box {
+            border: 1px solid #0f0;
+            height: 85vh;
+            padding: 15px;
+            overflow-y: auto;
+            background: rgba(0, 20, 0, 0.1);
+            box-shadow: inset 0 0 10px #0f0;
+        }
+
+        .msg {
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .ts {
+            color: #050;
+            font-size: 0.8em;
+            margin-right: 10px;
+        }
+
+        .usr {
+            color: #fff;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .input-area {
+            margin-top: 15px;
+            display: flex;
+            font-size: 1.1em;
+        }
+
+        input {
+            background: transparent;
+            border: none;
+            color: #0f0;
+            outline: none;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #0f0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="chat-box">
+        <div id="messages"></div>
+    </div>
+    <div class="input-area">
+        <span id="prompt" style="margin-right:10px">></span>
+        <input type="text" id="chat-input" autofocus autocomplete="off">
+    </div>
+
+    <script>
+        const alias = prompt("Identify Yourself:") || "Ghost";
+        document.getElementById('prompt').innerText = `${alias.toUpperCase()}@ROOT:~$`;
+
+        async function loadMessages() {
+            try {
+                const res = await fetch('/api/messages');
+                const data = await res.json();
+                const container = document.getElementById('messages');
+                container.innerHTML = data.map(m => `
+                    <div class="msg">
+                        <span class="ts">[${new Date(m.created_at).toLocaleTimeString()}]</span>
+                        <span class="usr">${m.sender}:</span> ${m.content}
+                    </div>`).join('');
+                document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+            } catch (e) { }
+        }
+
+        document.getElementById('chat-input').addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter' && e.target.value.trim() !== "") {
+                const content = e.target.value;
+                e.target.value = '';
+                await fetch('/api/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sender: alias, content: content })
+                });
+                loadMessages();
+            }
+        });
+
+        setInterval(loadMessages, 2500);
+        loadMessages();
+    </script>
+</body>
+
+</html>

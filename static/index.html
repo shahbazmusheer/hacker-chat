@@ -326,7 +326,7 @@
             if (!user || !target) return notify("CREDENTIALS_MISSING", "fail");
             document.getElementById('login-overlay').classList.add('hidden');
             document.getElementById('header-text').innerText = `${isGroup ? 'GROUP' : 'PRIVATE'}: ${target}`;
-            document.getElementById('prompt').innerText = `${user}@${target}:~$`;
+            document.getElementById('prompt').innerText = `${user}&${target}:~$`;
             if (!isGroup) document.getElementById('target-dot').classList.remove('hidden');
             document.getElementById('chat-in').focus()
             setInterval(sync, 2500);

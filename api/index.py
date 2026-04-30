@@ -70,17 +70,34 @@ def get_messages(user: str, target: str, is_group: bool):
 
 
 @app.get("/api/presence")
-def get_presence(target: str):
-    # Consider a user "Online" if seen in the last 15 seconds
-    threshold = (datetime.now(timezone.utc) - timedelta(seconds=15)).isoformat()
-    res = (
-        supabase.table("chat_users")
-        .select("username")
-        .eq("active_target", target)
-        .gt("last_seen", threshold)
-        .execute()
-    )
-    return [row["username"] for row in res.data]
+def get_presence(target: str, is_group: bool, requester: str):
+    try:
+        # Online threshold: 15 seconds
+        threshold = (datetime.now(timezone.utc) - timedelta(seconds=15)).isoformat()
+
+        if is_group:
+            # Group: Find anyone currently looking at this group
+            res = (
+                supabase.table("chat_users")
+                .select("username")
+                .eq("active_target", target)
+                .gt("last_seen", threshold)
+                .execute()
+            )
+        else:
+            # Private: Find if the specific 'target' is currently looking at 'requester'
+            res = (
+                supabase.table("chat_users")
+                .select("username")
+                .eq("username", target)
+                .eq("active_target", requester)
+                .gt("last_seen", threshold)
+                .execute()
+            )
+
+        return [row["username"] for row in res.data]
+    except:
+        return []
 
 
 @app.post("/api/send")

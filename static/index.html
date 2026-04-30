@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>HACKER CHAT ZETA</title>
+    <title>HACKER CHAT PRO</title>
     <style>
         :root {
             --red: #ff0000;
@@ -41,7 +41,6 @@
             flex-direction: column;
             padding: 15px;
             position: relative;
-            box-shadow: 0 0 20px var(--dark);
         }
 
         #chat-box {
@@ -49,19 +48,19 @@
             overflow-y: auto;
         }
 
-        /* STATUS & PRESENCE LOGS (TOP RIGHT) */
+        /* INCREASED FONT SIZE FOR LOGS */
         #presence-container {
             position: absolute;
             top: 15px;
             right: 15px;
             text-align: right;
-            width: 250px;
+            width: 300px;
             z-index: 100;
             pointer-events: none;
         }
 
         #presence-list {
-            font-size: 1em;
+            font-size: 1.2em;
             color: var(--green);
             font-weight: bold;
             margin-bottom: 8px;
@@ -69,26 +68,29 @@
         }
 
         #event-log {
-            font-size: 0.9em;
-            height: 80px;
+            font-size: 1.1em;
+            height: 100px;
             overflow: hidden;
-            opacity: 0.9;
+            opacity: 1;
+            font-weight: bold;
         }
 
         .log-join {
             color: var(--green);
-            margin-bottom: 2px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
         }
 
         .log-left {
             color: var(--red);
-            margin-bottom: 2px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
         }
 
         /* DOTS */
         .dot {
-            height: 10px;
-            width: 10px;
+            height: 12px;
+            width: 12px;
             border-radius: 50%;
             display: inline-block;
             margin-left: 10px;
@@ -97,7 +99,7 @@
 
         .dot-online {
             background: var(--green);
-            box-shadow: 0 0 10px var(--green);
+            box-shadow: 0 0 12px var(--green);
             animation: pulse 1s infinite;
         }
 
@@ -124,7 +126,7 @@
             margin: 8px 0;
             border-left: 2px solid var(--red);
             padding-left: 10px;
-            font-size: 1em;
+            font-size: 1.1em;
         }
 
         .usr {
@@ -153,6 +155,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 200;
         }
 
         .modal {
@@ -166,10 +169,6 @@
 
         .hidden {
             display: none !important;
-        }
-
-        #login-overlay {
-            z-index: 200;
         }
 
         #admin-overlay {
@@ -195,6 +194,7 @@
             cursor: pointer;
             font-family: inherit;
             margin: 5px;
+            text-transform: uppercase;
         }
 
         .btn:hover {
@@ -208,13 +208,13 @@
             color: #fff;
             padding: 15px;
             margin-top: 10px;
-            font-size: 0.9em;
+            font-size: 1em;
             box-shadow: var(--glow);
         }
 
         .admin-data {
             text-align: left;
-            font-size: 0.8em;
+            font-size: 0.9em;
             height: 150px;
             overflow-y: auto;
             background: #080000;
@@ -230,7 +230,7 @@
 
     <div id="notification-area"></div>
 
-    <!-- CONFIRMATION -->
+    <!-- CONFIRMATION MODAL -->
     <div id="confirm-overlay" class="overlay hidden">
         <div class="modal" style="border-color: #fff;">
             <h2 style="color:#fff; animation: blink 0.5s infinite;">!! WARNING !!</h2>
@@ -240,14 +240,14 @@
         </div>
     </div>
 
-    <!-- LOGIN -->
+    <!-- LOGIN MODAL -->
     <div id="login-overlay" class="overlay">
         <div class="modal">
             <h2>UPLINK_INIT</h2>
             <input type="text" id="my-alias" placeholder="IDENT_CODE"
-                style="border: 1px solid #333; margin-bottom: 10px; text-align: center;">
+                style="border: 1px solid #333; margin-bottom: 10px; text-align: center; background: #000; color: #fff;">
             <input type="text" id="target-id" placeholder="TARGET_NODE"
-                style="border: 1px solid #333; text-align: center;">
+                style="border: 1px solid #333; text-align: center; background: #000; color: #fff;">
             <div style="margin: 15px 0;">
                 <label><input type="radio" name="type" value="private" checked> PRIVATE</label> &nbsp;
                 <label><input type="radio" name="type" value="group"> GROUP</label>
@@ -261,14 +261,17 @@
         <div class="modal">
             <h2 style="color: #fff;">ADMIN_CONSOLE</h2>
             <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                <input type="text" id="adm-user" placeholder="ADMIN_ID" style="width: 50%; border: 1px solid #333;">
-                <input type="password" id="adm-pass" placeholder="PASSKEY" style="width: 50%; border: 1px solid #333;">
+                <input type="text" id="adm-user" placeholder="ADMIN_ID"
+                    style="width: 50%; border: 1px solid #333; background: #000; color: #fff;">
+                <input type="password" id="adm-pass" placeholder="PASSKEY"
+                    style="width: 50%; border: 1px solid #333; background: #000; color: #fff;">
             </div>
             <div id="admin-data" class="admin-data">Awaiting Authorization...</div>
-            <button class="btn" onclick="adminFetch()">FETCH_STATS</button>
+            <button class="btn" onclick="adminFetch()">STATS</button>
             <button class="btn" onclick="triggerPurge()" style="background: #600;">PURGE_ALL_LOGS</button>
             <hr border="1" color="#200" style="margin: 15px 0;">
-            <input type="text" id="new-group" placeholder="NEW_GROUP_ID" style="width: 60%; border: 1px solid #333;">
+            <input type="text" id="new-group" placeholder="NEW_GROUP_ID"
+                style="width: 60%; border: 1px solid #333; background: #000; color: #fff;">
             <button class="btn" onclick="adminCreateGroup()">CREATE_GROUP</button>
             <br><br>
             <button onclick="closeAdmin()" style="background:none; color:#444; border:none; cursor:pointer;">[
@@ -283,7 +286,7 @@
             <div id="event-log"></div>
         </div>
         <div
-            style="font-size: 0.8em; border-bottom: 1px solid #300; padding-bottom: 10px; display: flex; align-items: center;">
+            style="font-size: 1em; border-bottom: 1px solid #300; padding-bottom: 10px; display: flex; align-items: center;">
             <span id="header-text">SYSTEM_IDLE</span>
             <span id="target-dot" class="dot hidden"></span>
         </div>
@@ -330,18 +333,21 @@
 
         async function sync() {
             try {
+                // 1. Load Messages
                 const mRes = await fetch(`/api/messages?user=${user}&target=${target}&is_group=${isGroup}`);
                 const msgs = await mRes.json();
                 document.getElementById('chat-box').innerHTML = msgs.map(m => `<div class="msg"><span class="usr">${m.sender}:</span> ${m.content}</div>`).join('');
                 document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
 
-                const pRes = await fetch(`/api/presence?target=${target}`);
+                // 2. Load Presence (Pass 'user' as requester)
+                const pRes = await fetch(`/api/presence?target=${target}&is_group=${isGroup}&requester=${user}`);
                 const currentUsers = await pRes.json();
 
                 if (isGroup) {
                     handleEvents(currentUsers);
                     document.getElementById('presence-list').innerText = `ACTIVE_NODES: ${currentUsers.length}`;
                 } else {
+                    // In private chat, currentUsers will contain target name if they are online and looking at us
                     const online = currentUsers.includes(target);
                     document.getElementById('target-dot').className = `dot ${online ? 'dot-online' : 'dot-offline'}`;
                     document.getElementById('presence-list').innerText = online ? "TARGET_ONLINE" : "TARGET_OFFLINE";
@@ -352,8 +358,8 @@
 
         function handleEvents(newList) {
             const log = document.getElementById('event-log');
-            newList.forEach(u => { if (!activeUsers.includes(u) && u !== user) log.innerHTML = `<div class="log-join">> ${u} UPLINK_ESTABLISHED</div>` + log.innerHTML; });
-            activeUsers.forEach(u => { if (!newList.includes(u) && u !== user) log.innerHTML = `<div class="log-left">> ${u} UPLINK_LOST</div>` + log.innerHTML; });
+            newList.forEach(u => { if (!activeUsers.includes(u) && u !== user) log.innerHTML = `<div class="log-join">> ${u} established uplink</div>` + log.innerHTML; });
+            activeUsers.forEach(u => { if (!newList.includes(u) && u !== user) log.innerHTML = `<div class="log-left">> ${u} connection lost</div>` + log.innerHTML; });
         }
 
         document.getElementById('chat-in').addEventListener('keypress', async (e) => {
@@ -364,7 +370,6 @@
             }
         });
 
-        // ADMIN SHORTCUT
         window.addEventListener('keydown', (e) => { if (e.ctrlKey && e.shiftKey && e.code === 'KeyX') document.getElementById('admin-overlay').classList.toggle('hidden'); });
         function closeAdmin() { document.getElementById('admin-overlay').classList.add('hidden'); }
 

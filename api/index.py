@@ -32,16 +32,20 @@ class AdminAction(BaseModel):
 @app.get("/api/messages")
 def get_messages(user: str, target: str, is_group: bool):
     try:
-        # 1. Automatic 2-Day Cleanup (Applies to ALL chats)
+        # 1. Update Heartbeat & Location
+        supabase.table("chat_users").upsert(
+            {
+                "username": user,
+                "last_seen": datetime.now(timezone.utc).isoformat(),
+                "active_target": target,
+            }
+        ).execute()
+
+        # 2. Cleanup old messages (2 days)
         threshold = (datetime.now(timezone.utc) - timedelta(days=2)).isoformat()
         supabase.table("chat_messages").delete().lt("created_at", threshold).execute()
 
-        # 2. Update User Activity
-        supabase.table("chat_users").upsert(
-            {"username": user, "last_seen": "now()"}
-        ).execute()
-
-        # 3. Fetch specific history
+        # 3. Fetch History
         if is_group:
             res = (
                 supabase.table("chat_messages")
@@ -51,7 +55,6 @@ def get_messages(user: str, target: str, is_group: bool):
                 .execute()
             )
         else:
-            # Filters Private: (Me to Him) OR (Him to Me)
             res = (
                 supabase.table("chat_messages")
                 .select("*")
@@ -64,6 +67,20 @@ def get_messages(user: str, target: str, is_group: bool):
         return res.data
     except:
         return []
+
+
+@app.get("/api/presence")
+def get_presence(target: str):
+    # Consider a user "Online" if seen in the last 15 seconds
+    threshold = (datetime.now(timezone.utc) - timedelta(seconds=15)).isoformat()
+    res = (
+        supabase.table("chat_users")
+        .select("username")
+        .eq("active_target", target)
+        .gt("last_seen", threshold)
+        .execute()
+    )
+    return [row["username"] for row in res.data]
 
 
 @app.post("/api/send")

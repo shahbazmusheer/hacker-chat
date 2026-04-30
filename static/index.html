@@ -8,7 +8,7 @@
             --red: #ff0000;
             --dark: #1a0000;
             --bg: #050000;
-            --glow: 0 0 10px rgba(255, 0, 0, 0.8);
+            --green: #0f0;
         }
 
         body {
@@ -20,38 +20,90 @@
             overflow: hidden;
         }
 
-        /* CRT Overlay */
-        body::after {
-            content: " ";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
-            background-size: 100% 4px;
-            pointer-events: none;
-            z-index: 1000;
-        }
-
+        /* Terminal Frame */
         #terminal {
             height: 90vh;
             border: 1px solid var(--red);
             display: flex;
             flex-direction: column;
             padding: 15px;
-            box-shadow: 0 0 15px var(--dark);
+            position: relative;
         }
 
         #chat-box {
             flex-grow: 1;
             overflow-y: auto;
-            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+
+        /* Status Panel (Top Right) */
+        #status-panel {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            text-align: right;
+            width: 200px;
+            z-index: 50;
+        }
+
+        #presence-list {
+            font-size: 0.7em;
+            color: var(--green);
+            margin-bottom: 5px;
+        }
+
+        #event-log {
+            font-size: 0.65em;
+            height: 50px;
+            overflow: hidden;
+            opacity: 0.8;
+        }
+
+        /* Animated Online Dot */
+        .dot {
+            height: 8px;
+            width: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .dot-online {
+            background-color: var(--green);
+            box-shadow: 0 0 10px var(--green);
+            animation: pulse 1.5s infinite;
+        }
+
+        .dot-offline {
+            background-color: #400;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Join/Leave Styles */
+        .log-join {
+            color: var(--green);
+        }
+
+        .log-left {
+            color: var(--red);
         }
 
         .msg {
             margin: 8px 0;
-            border-left: 2px solid var(--red);
+            border-left: 1px solid #300;
             padding-left: 10px;
             font-size: 0.9em;
         }
@@ -66,12 +118,11 @@
             border: none;
             color: #fff;
             outline: none;
-            padding: 5px;
+            width: 100%;
             font-family: inherit;
             font-size: 1.1em;
         }
 
-        /* GENERAL MODAL STYLES */
         .overlay {
             position: fixed;
             top: 0;
@@ -79,6 +130,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.9);
+            z-index: 200;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -86,228 +138,125 @@
 
         .modal {
             background: #000;
-            border: 2px solid var(--red);
+            border: 1px solid var(--red);
             padding: 30px;
-            width: 450px;
+            width: 400px;
             text-align: center;
-            box-shadow: 0 0 30px var(--red);
-            position: relative;
         }
 
         .hidden {
             display: none !important;
         }
 
-        /* Z-INDEX LAYERING */
-        #login-overlay {
-            z-index: 200;
-        }
-
-        #admin-overlay {
-            z-index: 300;
-        }
-
-        #confirm-overlay {
-            z-index: 500;
-        }
-
-        /* Must be highest */
-        #notification-area {
-            z-index: 600;
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-        }
-
         .btn {
             background: var(--dark);
             color: var(--red);
             border: 1px solid var(--red);
-            padding: 8px 15px;
+            padding: 5px 15px;
             cursor: pointer;
             font-family: inherit;
-            margin: 5px;
-            text-transform: uppercase;
-        }
-
-        .btn:hover {
-            background: var(--red);
-            color: #000;
-        }
-
-        .notify {
-            background: #110000;
-            border: 1px solid var(--red);
-            color: #fff;
-            padding: 12px 20px;
-            margin-top: 10px;
-            font-size: 0.8em;
-            box-shadow: var(--glow);
-            animation: slide 0.3s forwards;
-        }
-
-        @keyframes slide {
-            from {
-                transform: translateX(100%);
-            }
-
-            to {
-                transform: translateX(0);
-            }
-        }
-
-        .warn-text {
-            color: #fff;
-            font-size: 1.2em;
-            margin-bottom: 20px;
-            animation: blink 0.5s infinite;
-            font-weight: bold;
-        }
-
-        @keyframes blink {
-            0% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0;
-            }
-        }
-
-        .admin-data {
-            text-align: left;
-            font-size: 0.7em;
-            height: 150px;
-            overflow-y: auto;
-            background: #080000;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #300;
-            color: #0f0;
         }
     </style>
 </head>
 
 <body>
 
-    <div id="notification-area"></div>
-
-    <!-- 1. LOGIN LAYER -->
     <div id="login-overlay" class="overlay">
         <div class="modal">
             <h2>UPLINK_REQUIRED</h2>
-            <input type="text" id="my-alias" placeholder="IDENTITY_CODE"
-                style="width: 80%; border: 1px solid #333; margin-bottom: 10px; text-align: center;">
+            <input type="text" id="my-alias" placeholder="IDENT_CODE"
+                style="width: 80%; border: 1px solid #333; margin-bottom: 10px; text-align: center; background: #000; color: #fff;">
             <input type="text" id="target-id" placeholder="TARGET_NODE"
-                style="width: 80%; border: 1px solid #333; text-align: center;">
-            <div style="margin: 15px 0;">
+                style="width: 80%; border: 1px solid #333; text-align: center; background: #000; color: #fff;">
+            <div style="margin: 15px 0; font-size: 0.8em;">
                 <label><input type="radio" name="type" value="private" checked> PRIVATE</label> &nbsp;
                 <label><input type="radio" name="type" value="group"> GROUP</label>
             </div>
-            <button class="btn" onclick="connect()" style="width: 85%;">INITIALIZE_SESSION</button>
+            <button class="btn" onclick="connect()">INITIALIZE</button>
         </div>
     </div>
 
-    <!-- 2. MAIN TERMINAL LAYER -->
     <div id="terminal">
-        <div
-            style="font-size: 0.7em; border-bottom: 1px solid #300; padding-bottom: 5px; margin-bottom: 10px; display: flex; justify-content: space-between;">
-            <span>HACKER CHAT ZETA</span>
-            <span id="header-status">UPLINK_OFFLINE</span>
+        <div id="status-panel">
+            <div id="presence-list">SCANNING...</div>
+            <div id="event-log"></div>
         </div>
+
+        <div style="font-size: 0.7em; border-bottom: 1px solid #300; padding-bottom: 5px;">
+            <span id="header-text">SYSTEM_IDLE</span>
+            <span id="target-status-dot" class="hidden"></span>
+        </div>
+
         <div id="chat-box"></div>
-        <div style="display: flex; border-top: 1px solid #200; align-items: center; padding-top: 10px;">
+
+        <div style="display: flex; border-top: 1px solid #200; padding-top: 10px;">
             <span id="prompt" style="margin-right: 10px; font-weight: bold;">></span>
-            <input type="text" id="chat-in" style="flex-grow: 1;" autofocus autocomplete="off">
-        </div>
-    </div>
-
-    <!-- 3. ADMIN LAYER -->
-    <div id="admin-overlay" class="overlay hidden">
-        <div class="modal">
-            <h2 style="color: #fff;">ADMIN_CONSOLE</h2>
-            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                <input type="text" id="adm-user" placeholder="ADMIN_ID" style="width: 50%; border: 1px solid #333;">
-                <input type="password" id="adm-pass" placeholder="PASSKEY" style="width: 50%; border: 1px solid #333;">
-            </div>
-            <div id="admin-data" class="admin-data">Awaiting authentication...</div>
-            <button class="btn" onclick="adminFetch()">STATS</button>
-            <button class="btn" onclick="triggerPurge()" style="background: #500;">PURGE_LOGS</button>
-            <hr border="1" color="#200" style="margin: 15px 0;">
-            <input type="text" id="new-group" placeholder="NEW_GROUP_ID" style="width: 60%; border: 1px solid #333;">
-            <button class="btn" onclick="adminCreateGroup()">CREATE</button>
-            <br><br>
-            <button onclick="closeAdmin()" style="background:none; color:#444; border:none; cursor:pointer;">[
-                CLOSE_CONSOLE ]</button>
-        </div>
-    </div>
-
-    <!-- 4. CONFIRMATION LAYER (TOPMOST) -->
-    <div id="confirm-overlay" class="overlay hidden">
-        <div class="modal" style="border-color: #fff;">
-            <div class="warn-text">!! WARNING !!</div>
-            <p id="confirm-msg" style="color: #fff;">Execute destructive command?</p>
-            <div style="margin-top: 20px;">
-                <button class="btn" id="confirm-yes">CONFIRM_EXECUTION</button>
-                <button class="btn" id="confirm-no" style="border-color: #fff; color: #fff;">ABORT</button>
-            </div>
+            <input type="text" id="chat-in" autofocus autocomplete="off">
         </div>
     </div>
 
     <script>
         let user = "", target = "", isGroup = false;
+        let activeUsers = [];
 
-        // --- NOTIFICATIONS ---
-        function notify(text, status = "info") {
-            const area = document.getElementById('notification-area');
-            const n = document.createElement('div');
-            n.className = 'notify';
-            n.innerText = `[${status.toUpperCase()}] ${text}`;
-            area.appendChild(n);
-            setTimeout(() => n.remove(), 4000);
-        }
-
-        // --- CUSTOM CONFIRMATION ---
-        function hackerConfirm(msg, callback) {
-            const overlay = document.getElementById('confirm-overlay');
-            document.getElementById('confirm-msg').innerText = msg;
-            overlay.classList.remove('hidden'); // Show it
-
-            document.getElementById('confirm-yes').onclick = () => {
-                overlay.classList.add('hidden');
-                callback();
-            };
-            document.getElementById('confirm-no').onclick = () => {
-                overlay.classList.add('hidden');
-            };
-        }
-
-        // --- CHAT LOGIC ---
         function connect() {
             user = document.getElementById('my-alias').value.trim();
             target = document.getElementById('target-id').value.trim();
             isGroup = document.querySelector('input[name="type"]:checked').value === "group";
-            if (!user || !target) return notify("IDENT_CODE_REQUIRED", "fail");
+            if (!user || !target) return;
 
             document.getElementById('login-overlay').classList.add('hidden');
-            document.getElementById('header-status').innerText = `NODE: ${user} | TARGET: ${target}`;
+            document.getElementById('header-text').innerText = `${isGroup ? 'GROUP' : 'USER'}: ${target}`;
             document.getElementById('prompt').innerText = `${user}@${target}:~$`;
-            document.getElementById('chat-in').focus();
-            notify("UPLINK_ESTABLISHED", "success");
-            setInterval(load, 2500);
-            load();
+
+            if (!isGroup) document.getElementById('target-status-dot').classList.remove('hidden');
+
+            setInterval(sync, 2500);
+            sync();
         }
 
-        async function load() {
-            try {
-                const res = await fetch(`/api/messages?user=${user}&target=${target}&is_group=${isGroup}`);
-                const data = await res.json();
-                document.getElementById('chat-box').innerHTML = data.map(m => `
-                <div class="msg">
-                    <span class="usr">${m.sender}:</span> ${m.content}
-                </div>`).join('');
-                document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
-            } catch (e) { }
+        async function sync() {
+            // 1. Load Messages
+            const msgRes = await fetch(`/api/messages?user=${user}&target=${target}&is_group=${isGroup}`);
+            const msgs = await msgRes.json();
+            document.getElementById('chat-box').innerHTML = msgs.map(m => `
+            <div class="msg"><span class="usr">${m.sender}:</span> ${m.content}</div>
+        `).join('');
+            document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+
+            // 2. Load Presence
+            const presRes = await fetch(`/api/presence?target=${target}`);
+            const currentActive = await presRes.json();
+
+            if (isGroup) {
+                handleGroupEvents(currentActive);
+                document.getElementById('presence-list').innerText = `ACTIVE_NODES: ${currentActive.length}`;
+            } else {
+                // Private Dot Logic
+                const isTargetOnline = currentActive.includes(target);
+                const dot = document.getElementById('target-status-dot');
+                dot.className = `dot ${isTargetOnline ? 'dot-online' : 'dot-offline'}`;
+                document.getElementById('presence-list').innerText = isTargetOnline ? "TARGET_ONLINE" : "TARGET_OFFLINE";
+            }
+            activeUsers = currentActive;
+        }
+
+        function handleGroupEvents(newList) {
+            const log = document.getElementById('event-log');
+
+            // Who joined?
+            newList.forEach(u => {
+                if (!activeUsers.includes(u) && u !== user) {
+                    log.innerHTML = `<div class="log-join">> ${u} established uplink</div>` + log.innerHTML;
+                }
+            });
+
+            // Who left?
+            activeUsers.forEach(u => {
+                if (!newList.includes(u) && u !== user) {
+                    log.innerHTML = `<div class="log-left">> ${u} connection lost</div>` + log.innerHTML;
+                }
+            });
         }
 
         document.getElementById('chat-in').addEventListener('keypress', async (e) => {
@@ -318,64 +267,9 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ sender: user, recipient: target, content: val, is_group: isGroup })
                 });
-                load();
+                sync();
             }
         });
-
-        // --- ADMIN ACTIONS ---
-        window.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.shiftKey && e.code === 'KeyX') {
-                document.getElementById('admin-overlay').classList.toggle('hidden');
-            }
-        });
-
-        function closeAdmin() {
-            document.getElementById('admin-overlay').classList.add('hidden');
-            document.getElementById('chat-in').focus()
-        }
-
-        async function adminFetch() {
-            const u = document.getElementById('adm-user').value, p = document.getElementById('adm-pass').value;
-            const res = await fetch('/api/admin/stats', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user: u, password: p })
-            });
-            if (res.status === 200) {
-                const data = await res.json();
-                notify("STATS_FETCHED", "success");
-                let html = "<b>NODES:</b><br>" + data.users.map(x => `• ${x.username}`).join('<br>');
-                html += "<br><br><b>GROUPS:</b><br>" + data.groups.map(x => `• ${x.group_name}`).join('<br>');
-                document.getElementById('admin-data').innerHTML = html;
-            } else notify("ACCESS_DENIED", "fail");
-        }
-
-        function triggerPurge() {
-            // This is where the modal is triggered
-            hackerConfirm("PURGE ALL DATABASE LOGS PERMANENTLY?", adminClear);
-        }
-
-        async function adminClear() {
-            const u = document.getElementById('adm-user').value, p = document.getElementById('adm-pass').value;
-            const res = await fetch('/api/admin/clear', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user: u, password: p })
-            });
-            if (res.status === 200) { notify("DATABASE_PURGED", "success"); load(); }
-            else notify("PURGE_FAILED: AUTH", "fail");
-        }
-
-        async function adminCreateGroup() {
-            const u = document.getElementById('adm-user').value, p = document.getElementById('adm-pass').value, g = document.getElementById('new-group').value;
-            const res = await fetch('/api/admin/create-group', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user: u, password: p, target: g })
-            });
-            if (res.status === 200) { notify("GROUP_CREATED", "success"); adminFetch(); }
-            else notify("DENIED", "fail");
-        }
     </script>
 </body>
 

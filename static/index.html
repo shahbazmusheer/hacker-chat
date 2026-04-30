@@ -291,7 +291,7 @@
             <span id="target-dot" class="dot hidden"></span>
         </div>
         <div id="chat-box"></div>
-        <div style="display: flex; border-top: 1px solid #200; padding-top: 10px;">
+        <div style="display: flex; align-items: center; border-top: 1px solid #200; padding-top: 10px;">
             <span id="prompt" style="margin-right: 10px; font-weight: bold;">></span>
             <input type="text" id="chat-in" autofocus autocomplete="off">
         </div>
@@ -326,6 +326,7 @@
             document.getElementById('header-text').innerText = `${isGroup ? 'GROUP' : 'PRIVATE'}: ${target}`;
             document.getElementById('prompt').innerText = `${user}@${target}:~$`;
             if (!isGroup) document.getElementById('target-dot').classList.remove('hidden');
+            document.getElementById('chat-in').focus()
             setInterval(sync, 2500);
             sync();
             notify("UPLINK_ESTABLISHED", "success");
@@ -371,7 +372,10 @@
         });
 
         window.addEventListener('keydown', (e) => { if (e.ctrlKey && e.shiftKey && e.code === 'KeyX') document.getElementById('admin-overlay').classList.toggle('hidden'); });
-        function closeAdmin() { document.getElementById('admin-overlay').classList.add('hidden'); }
+        function closeAdmin() {
+            document.getElementById('admin-overlay').classList.add('hidden');
+            document.getElementById('chat-in').focus()
+        }
 
         async function adminFetch() {
             const u = document.getElementById('adm-user').value, p = document.getElementById('adm-pass').value;

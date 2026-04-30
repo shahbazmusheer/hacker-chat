@@ -3,12 +3,12 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>RED_LINE_TERMINAL</title>
+    <title>RED_LINE_TERMINAL_v1.0</title>
     <style>
         :root {
             --primary-red: #ff0000;
             --dark-red: #4b0000;
-            --bg-black: #0a0000;
+            --bg-black: #050000;
             --glow: 0 0 10px rgba(255, 0, 0, 0.7);
         }
 
@@ -22,6 +22,7 @@
             text-shadow: var(--glow);
         }
 
+        /* CRT Effects */
         body::before {
             content: " ";
             display: block;
@@ -31,7 +32,7 @@
             bottom: 0;
             right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2;
+            z-index: 10;
             background-size: 100% 4px, 3px 100%;
             pointer-events: none;
         }
@@ -43,27 +44,14 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 0 20px var(--dark-red);
-            animation: flicker 0.15s infinite;
-        }
-
-        @keyframes flicker {
-            0% {
-                opacity: 0.98;
-            }
-
-            5% {
-                opacity: 0.95;
-            }
-
-            100% {
-                opacity: 1;
-            }
         }
 
         #chat-box {
             flex-grow: 1;
             overflow-y: auto;
             margin-bottom: 20px;
+            filter: blur(0px);
+            transition: filter 0.3s;
         }
 
         .msg {
@@ -82,12 +70,74 @@
             color: #fff;
         }
 
+        /* ADVANCED HACKER MODAL */
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hacker-modal {
+            width: 400px;
+            padding: 30px;
+            border: 2px solid var(--primary-red);
+            background: #110000;
+            box-shadow: 0 0 30px var(--primary-red);
+            text-align: center;
+            position: relative;
+        }
+
+        .hacker-modal h2 {
+            margin-top: 0;
+            letter-spacing: 4px;
+            color: #fff;
+            font-size: 1.2em;
+        }
+
+        .hacker-modal input {
+            background: #000;
+            border: 1px solid var(--primary-red);
+            color: #fff;
+            padding: 10px;
+            width: 80%;
+            text-align: center;
+            font-family: inherit;
+            outline: none;
+            margin-top: 20px;
+        }
+
+        .hacker-modal .btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: 1px solid var(--primary-red);
+            background: var(--dark-red);
+            color: #fff;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .hacker-modal .btn:hover {
+            background: var(--primary-red);
+            color: #000;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
         .input-line {
             display: flex;
             align-items: center;
         }
 
-        input {
+        #chat-input {
             background: transparent;
             border: none;
             color: white;
@@ -109,24 +159,95 @@
 
 <body>
 
+    <!-- INITIAL LOGIN MODAL -->
+    <div id="modal-overlay">
+        <div id="login-modal" class="hacker-modal">
+            <h2>ACCESS_REQUIRED</h2>
+            <p>[SYSTEM] Identify yourself to join uplink...</p>
+            <input type="text" id="alias-input" placeholder="HACKER_ALIAS" maxlength="15">
+            <br>
+            <button class="btn" onclick="startUplink()">INITIALIZE_SESSION</button>
+        </div>
+
+        <!-- CLEAR CHAT OVERRIDE MODAL -->
+        <div id="clear-modal" class="hacker-modal hidden">
+            <h2 style="color: #ff0000; animation: blink 0.5s infinite;">SYSTEM_OVERRIDE</h2>
+            <p>CAUTION: PURGING DATABASE LOGS</p>
+            <input type="password" id="admin-pass-input" placeholder="ROOT_PASSWORD">
+            <br>
+            <button class="btn" onclick="confirmWipe()" style="border-color: #fff;">EXECUTE_WIPE</button>
+            <button class="btn" onclick="closeClearModal()">ABORT</button>
+        </div>
+    </div>
+
     <div id="terminal-wrap">
         <div
-            style="font-size: 0.8em; border-bottom: 1px solid var(--dark-red); margin-bottom: 10px; padding-bottom: 5px;">
-            CMD: [clear-hacker-chat] TO WIPE LOGS | SYSTEM_STATUS: ACTIVE
+            style="font-size: 0.8em; border-bottom: 1px solid var(--dark-red); margin-bottom: 10px; padding-bottom: 5px; display: flex; justify-content: space-between;">
+            <span>CHANNEL: ENCRYPTED_RED_LINE</span>
+            <span>STATUS: <span id="conn-status">WAITING</span></span>
         </div>
         <div id="chat-box">
             <div id="messages"></div>
         </div>
         <div class="input-line">
-            <span id="prompt" style="margin-right:10px; font-weight:bold;">></span>
-            <input type="text" id="chat-input" autofocus autocomplete="off">
+            <span id="prompt-label" style="margin-right:10px; font-weight:bold;">GUEST@ROOT:~$</span>
+            <input type="text" id="chat-input" autocomplete="off" disabled>
         </div>
     </div>
 
     <script>
-        const alias = prompt("Enter Hacker Handle:") || "GHOST";
-        document.getElementById('prompt').innerText = `${alias.toUpperCase()}@NETWORK:~$`;
+        let myAlias = "";
 
+        // 1. Handling Initial Login
+        function startUplink() {
+            const input = document.getElementById('alias-input');
+            if (input.value.trim() === "") return;
+
+            myAlias = input.value.trim();
+            document.getElementById('prompt-label').innerText = `${myAlias.toUpperCase()}@NETWORK:~$`;
+            document.getElementById('modal-overlay').classList.add('hidden');
+            document.getElementById('chat-input').disabled = false;
+            document.getElementById('chat-input').focus();
+            document.getElementById('conn-status').innerText = "CONNECTED";
+
+            loadMessages();
+            setInterval(loadMessages, 2500);
+        }
+
+        // 2. Clear Modal Logic
+        function openClearModal() {
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            document.getElementById('login-modal').classList.add('hidden');
+            document.getElementById('clear-modal').classList.remove('hidden');
+            document.getElementById('admin-pass-input').focus();
+        }
+
+        function closeClearModal() {
+            document.getElementById('modal-overlay').classList.add('hidden');
+            document.getElementById('clear-modal').classList.add('hidden');
+            document.getElementById('chat-input').focus();
+        }
+
+        async function confirmWipe() {
+            const pass = document.getElementById('admin-pass-input').value;
+            const res = await fetch('/api/clear', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: pass })
+            });
+            const status = await res.json();
+
+            if (status.status === "cleared") {
+                alert("--- LOGS PURGED ---");
+                closeClearModal();
+                loadMessages();
+            } else {
+                alert("ACCESS DENIED: INCORRECT AUTHENTICATION");
+                document.getElementById('admin-pass-input').value = '';
+            }
+        }
+
+        // 3. Core Chat Logic
         async function loadMessages() {
             try {
                 const res = await fetch('/api/messages');
@@ -146,38 +267,24 @@
                 const cmd = e.target.value.trim();
                 e.target.value = '';
 
-                // SPECIAL COMMAND: CLEAR CHAT
                 if (cmd === "clear-hacker-chat") {
-                    const pass = prompt("SYSTEM OVERRIDE: ENTER AUTHORIZATION CODE");
-                    if (pass && confirm("WARNING: THIS WILL PERMANENTLY WIPE ALL DATABASE LOGS. PROCEED?")) {
-                        const res = await fetch('/api/clear', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ password: pass })
-                        });
-                        const status = await res.json();
-                        if (status.status === "cleared") {
-                            alert("DATABASE WIPED.");
-                            loadMessages();
-                        } else {
-                            alert("ACCESS DENIED: INVALID CODE.");
-                        }
-                    }
+                    openClearModal();
                     return;
                 }
 
-                // REGULAR MESSAGE
                 await fetch('/api/send', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ sender: alias, content: cmd })
+                    body: JSON.stringify({ sender: myAlias, content: cmd })
                 });
                 loadMessages();
             }
         });
 
-        setInterval(loadMessages, 2500);
-        loadMessages();
+        // Handle Enter key on Alias input
+        document.getElementById('alias-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') startUplink();
+        });
     </script>
 </body>
 

@@ -212,7 +212,7 @@
     <div id="terminal">
         <div
             style="font-size: 0.7em; border-bottom: 1px solid #300; padding-bottom: 5px; margin-bottom: 10px; display: flex; justify-content: space-between;">
-            <span>V.3.6_STABLE // CTRL+SHIFT+X_ADMIN</span>
+            <span>HACKER CHAT PRO</span>
             <span id="header-status">UPLINK_OFFLINE</span>
         </div>
         <div id="chat-box"></div>
@@ -290,7 +290,7 @@
             if (!user || !target) return notify("IDENT_CODE_REQUIRED", "fail");
 
             document.getElementById('login-overlay').classList.add('hidden');
-            document.getElementById('header-status').innerText = `NODE: ${user} // TARGET: ${target}`;
+            document.getElementById('header-status').innerText = `NODE: ${user} | TARGET: ${target}`;
             document.getElementById('prompt').innerText = `${user}@${target}:~$`;
             document.getElementById('chat-in').focus();
             notify("UPLINK_ESTABLISHED", "success");

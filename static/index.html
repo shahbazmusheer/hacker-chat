@@ -36,16 +36,17 @@
             background-attachment: fixed;
         }
 
+
         /* Hacker Scrollbar */
-        #chat-box::-webkit-scrollbar {
+        ::-webkit-scrollbar {
             width: 4px;
         }
 
-        #chat-box::-webkit-scrollbar-track {
+        ::-webkit-scrollbar-track {
             background: #000;
         }
 
-        #chat-box::-webkit-scrollbar-thumb {
+        ::-webkit-scrollbar-thumb {
             background: var(--red);
             box-shadow: var(--glow);
             border-radius: 10px;
@@ -90,12 +91,37 @@
             position: relative;
         }
 
+        /* Presence Area */
+        #presence-panel {
+            position: sticky;
+            top: 0;
+            float: right;
+            text-align: right;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        #presence-list {
+            color: var(--green);
+            font-weight: bold;
+            font-size: 0.9em;
+            text-shadow: 0 0 5px var(--green);
+        }
+
+        #event-log {
+            font-size: 0.8em;
+            height: 60px;
+            overflow: hidden;
+            opacity: 1;
+            font-weight: bold;
+        }
+
+        /* Messages */
         .msg-container {
             margin-bottom: 18px;
             border-left: 2px solid #200;
             padding-left: 12px;
             touch-action: pan-y;
-            background: rgba(5, 0, 0, 0.2);
         }
 
         .usr {
@@ -132,7 +158,7 @@
             word-break: break-word;
         }
 
-        /* Modals (70% Trans) */
+        /* Transparent Modals (70% Opacity) */
         .overlay {
             position: fixed;
             top: 0;
@@ -140,7 +166,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(1px);
             z-index: 2000;
             display: flex;
             align-items: center;
@@ -161,6 +187,7 @@
             display: none !important;
         }
 
+        /* Single Row Radio Fix */
         .flex-row {
             display: flex;
             justify-content: center;
@@ -168,9 +195,17 @@
             gap: 20px;
             margin: 15px 0;
             color: #fff;
+            font-size: 0.9em;
         }
 
-        /* Input Area */
+        .flex-row label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        /* Input Fixes */
         #input-container {
             flex-shrink: 0;
             padding-bottom: 10px;
@@ -277,7 +312,7 @@
 <body>
     <div id="notif-area" style="position:fixed; bottom:110px; right:20px; z-index:5000;"></div>
 
-    <!-- UI ALERTS -->
+    <!-- UI ALERTS (70% Trans) -->
     <div id="alert-overlay" class="overlay hidden" style="z-index: 6000;">
         <div class="modal">
             <h2 id="alert-title" style="color:#fff">SYSTEM_MSG</h2>
@@ -286,7 +321,7 @@
         </div>
     </div>
 
-    <!-- UI CONFIRM -->
+    <!-- UI CONFIRM (70% Trans) -->
     <div id="confirm-overlay" class="overlay hidden" style="z-index: 5500;">
         <div class="modal">
             <h2 style="color:#fff">!! WARNING !!</h2>
@@ -299,17 +334,18 @@
         </div>
     </div>
 
-    <!-- LOGIN -->
+    <!-- LOGIN (70% Trans) -->
     <div id="login-overlay" class="overlay">
         <div class="modal">
-            <h2 style="color:#fff; letter-spacing: 2px;">UPLINK_INIT</h2>
+            <h2 style="color:#fff; letter-spacing: 2px; margin-bottom: 10px;">UPLINK_INIT</h2>
 
+            <!-- NEW CONCISE DESCRIPTION -->
             <div
                 style="font-size: 0.75em; color: #888; text-align: left; margin-bottom: 20px; line-height: 1.4; border: 1px solid #300; padding: 10px; background: rgba(0,0,0,0.3);">
                 [SYSTEM_MANUAL]<br>
-                > <b style="color:var(--red)">IDENT_CODE:</b> Your unique alias for this session.<br>
-                > <b style="color:var(--red)">TARGET_NODE:</b> Recipient's alias or Group name.<br>
-                > <b style="color:var(--red)">PROTOCOL:</b> Uplink logs self-destruct after 48 hours.
+                > <b style="color:var(--red)">IDENT_CODE:</b> Your unique hacker alias for this session.<br>
+                > <b style="color:var(--red)">TARGET_NODE:</b> Recipient's alias (Private) or Group name.<br>
+                > <b style="color:var(--red)">PROTOCOL:</b> All uplink logs self-destruct after 48 hours.
             </div>
 
             <input type="text" id="my-alias" placeholder="IDENT_CODE">
@@ -322,7 +358,8 @@
         </div>
     </div>
 
-    <!-- ADMIN -->
+
+    <!-- ADMIN (70% Trans) -->
     <div id="admin-overlay" class="overlay hidden" style="z-index:3000;">
         <div class="modal">
             <h2 style="color:#fff">ADMIN_CONSOLE</h2>
@@ -349,9 +386,9 @@
         </div>
 
         <div id="chat-box">
-            <div id="presence-panel"
-                style="position: absolute; top: 10px; right: 10px; text-align: right; color: var(--green); font-size: 0.9em; pointer-events: none;">
+            <div id="presence-panel">
                 <div id="presence-list">SCANNING...</div>
+                <div id="event-log"></div>
             </div>
             <div id="messages"></div>
         </div>
@@ -431,7 +468,10 @@
         async function updatePresence() {
             const current = await post('/api/presence', { target, is_group: isGroup, requester: user });
             if (isGroup) {
-                document.getElementById('presence-list').innerText = `NODES: ${current.length}`;
+                const log = document.getElementById('event-log');
+                current.forEach(u => { if (!activeList.includes(u) && u !== user) log.innerHTML = `<div style="color:var(--green)">> ${u} JOINED</div>` + log.innerHTML; });
+                activeList.forEach(u => { if (!current.includes(u) && u !== user) log.innerHTML = `<div style="color:var(--red)">> ${u} LEFT</div>` + log.innerHTML; });
+                document.getElementById('presence-list').innerText = `ACTIVE_NODES: ${current.length}`;
             } else {
                 const online = current.includes(target);
                 document.getElementById('target-dot').className = `dot ${online ? 'dot-online' : 'dot-offline'}`;
@@ -440,6 +480,7 @@
         }
 
         function setReply(s, c) {
+            // FIX: Explicitly refresh all reply fields on every selection
             replyData = { parent_sender: s, parent_content: c };
             document.getElementById('reply-user').innerText = s;
             document.getElementById('reply-preview-text').innerText = c.length > 50 ? c.substring(0, 50) + "..." : c;

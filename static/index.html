@@ -11,11 +11,12 @@
             --dark: #1a0000;
             --bg: #050000;
             --green: #0f0;
-            --glow: 0 0 12px rgba(255, 0, 0, 0.6);
+            --glow: 0 0 15px rgba(255, 0, 0, 0.7);
         }
 
         * {
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -23,12 +24,11 @@
             color: var(--red);
             font-family: 'Courier New', monospace;
             margin: 0;
-            padding: 10px;
+            padding: 0;
             overflow: hidden;
             height: 100vh;
         }
 
-        /* CRT Scanline Effect */
         body::after {
             content: "";
             position: fixed;
@@ -36,62 +36,96 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
             background-size: 100% 4px;
             pointer-events: none;
             z-index: 1000;
         }
 
         #terminal {
-            height: 96vh;
-            border: 1px solid var(--red);
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            padding: 12px;
+            padding: 15px;
             position: relative;
-            box-shadow: 0 0 15px var(--dark);
         }
 
-        /* Header Fixes */
+        /* Header */
         #header {
             display: flex;
             justify-content: space-between;
             border-bottom: 1px solid var(--red);
-            padding-bottom: 8px;
-            font-size: 0.9em;
+            padding-bottom: 10px;
             align-items: center;
+            font-size: 0.9em;
         }
 
-        .btn-sm {
-            background: transparent;
-            border: 1px solid #fff;
-            color: #fff;
-            padding: 2px 8px;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 0.8em;
+        .dot {
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 8px;
+            vertical-align: middle;
         }
 
-        .btn-sm:hover {
-            background: #fff;
-            color: #000;
+        .dot-online {
+            background: var(--green);
+            box-shadow: 0 0 10px var(--green);
+            animation: pulse 1s infinite;
         }
 
+        .dot-offline {
+            background: #400;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* UI Panels */
         #chat-box {
             flex-grow: 1;
             overflow-y: auto;
-            margin: 10px 0;
+            padding: 10px 0;
         }
 
-        /* Transparent Hacker Modals */
+        #presence-logs {
+            position: sticky;
+            top: 0;
+            float: right;
+            text-align: right;
+            width: 250px;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .log-entry {
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+        }
+
+        /* Modals - 70% Transparent Glass */
         .overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
             z-index: 2000;
             display: flex;
             align-items: center;
@@ -99,35 +133,35 @@
         }
 
         .modal {
-            background: rgba(10, 0, 0, 0.8);
+            background: rgba(20, 0, 0, 0.7);
             border: 1px solid var(--red);
-            padding: 25px;
+            padding: 30px;
             width: 90%;
-            max-width: 450px;
+            max-width: 480px;
             text-align: center;
             box-shadow: var(--glow);
-            border-radius: 4px;
         }
 
         .hidden {
             display: none !important;
         }
 
-        /* Flex Selection */
-        .radio-flex {
+        /* Flex Selections */
+        .selector {
             display: flex;
             justify-content: center;
-            gap: 25px;
-            margin: 15px 0;
-            font-size: 0.9em;
+            gap: 30px;
+            margin: 20px 0;
             color: #fff;
+            font-size: 0.9em;
         }
 
-        /* Message Styling */
+        /* Message Styles */
         .msg-container {
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             border-left: 2px solid #200;
             padding-left: 12px;
+            touch-action: pan-y;
         }
 
         .usr {
@@ -141,7 +175,7 @@
             margin: 0 10px;
         }
 
-        .reply-link {
+        .reply-btn {
             cursor: pointer;
             color: var(--red);
             text-decoration: underline;
@@ -151,96 +185,163 @@
         .reply-quote {
             background: rgba(255, 255, 255, 0.05);
             border-left: 2px solid #fff;
-            padding: 5px;
-            font-size: 0.8em;
-            color: #888;
+            padding: 6px;
+            font-size: 0.85em;
+            color: #999;
             margin-bottom: 5px;
         }
 
-        input[type="text"],
-        input[type="password"] {
+        input {
             background: rgba(0, 0, 0, 0.5);
             border: 1px solid #333;
             color: #fff;
             font-family: inherit;
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-bottom: 10px;
             outline: none;
         }
 
-        input:focus {
-            border-color: var(--red);
-        }
-
         .btn {
-            background: var(--dark);
+            background: #300;
             color: var(--red);
             border: 1px solid var(--red);
             padding: 10px 20px;
             cursor: pointer;
             font-family: inherit;
             text-transform: uppercase;
-            margin-top: 10px;
+            margin: 5px;
+            width: 100%;
         }
 
         .btn:hover {
             background: var(--red);
             color: #000;
         }
+
+        .admin-scroll {
+            height: 180px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #300;
+            padding: 10px;
+            text-align: left;
+            font-size: 0.85em;
+            color: var(--green);
+            margin-bottom: 15px;
+        }
+
+        #reply-bar {
+            display: none;
+            background: rgba(255, 0, 0, 0.15);
+            padding: 10px;
+            border-top: 1px solid red;
+            font-size: 0.85em;
+        }
     </style>
 </head>
 
 <body>
 
-    <!-- LOGIN MODAL -->
-    <div id="login-overlay" class="overlay">
+    <div id="notif-area" style="position:fixed; bottom:80px; right:20px; z-index:5000;"></div>
+
+    <!-- UI ALERTS -->
+    <div id="alert-overlay" class="overlay hidden" style="z-index: 6000;">
         <div class="modal">
-            <h2 style="color:#fff; letter-spacing: 2px;">UPLINK_INIT</h2>
-            <input type="text" id="my-alias" placeholder="IDENT_CODE" autocomplete="off">
-            <input type="text" id="target-id" placeholder="TARGET_NODE" autocomplete="off">
-            <div class="radio-flex">
-                <label><input type="radio" name="type" value="private" checked> PRIVATE</label>
-                <label><input type="radio" name="type" value="group"> GROUP</label>
-            </div>
-            <button class="btn" onclick="connect()" style="width: 100%;">ESTABLISH_UPLINK</button>
+            <h2 id="alert-title" style="color:#fff">SYSTEM_NOTICE</h2>
+            <p id="alert-msg"></p>
+            <button class="btn" onclick="closeAlert()">ACKNOWLEDGE</button>
         </div>
     </div>
 
-    <!-- ADMIN MODAL -->
-    <div id="admin-overlay" class="overlay hidden" style="z-index:3000;">
+    <!-- UI CONFIRM -->
+    <div id="confirm-overlay" class="overlay hidden" style="z-index: 5500;">
         <div class="modal">
-            <h2 style="color:#fff">ADMIN_CONSOLE</h2>
-            <input type="text" id="adm-user" placeholder="ADMIN_ID">
-            <input type="password" id="adm-pass" placeholder="PASSKEY">
-            <button class="btn" onclick="adminPurge()" style="background:#500; width:100%;">PURGE_LOGS</button>
+            <h2 style="color:#fff">!! WARNING !!</h2>
+            <p id="confirm-msg" style="color:#fff"></p>
+            <button class="btn" id="confirm-exec">EXECUTE</button>
+            <button class="btn" onclick="closeConfirm()"
+                style="background:#000; border-color:#fff; color:#fff;">ABORT</button>
+        </div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="login-overlay" class="overlay">
+        <div class="modal">
+            <h2 style="color:#fff; letter-spacing: 3px;">UPLINK_INIT</h2>
+            <input type="text" id="my-alias" placeholder="IDENT_CODE">
+            <input type="text" id="target-id" placeholder="TARGET_NODE">
+            <div class="selector">
+                <label><input type="radio" name="type" value="private" checked> PRIVATE</label>
+                <label><input type="radio" name="type" value="group"> GROUP</label>
+            </div>
+            <button class="btn" onclick="connect()">ESTABLISH_UPLINK</button>
+        </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="admin-overlay" class="overlay hidden" style="z-index:3000;">
+        <div class="modal" style="max-width: 550px;">
+            <h2 style="color:#fff">ADMIN_v5_CONSOLE</h2>
+            <div style="display:flex; gap:5px; margin-bottom:10px;">
+                <input type="text" id="adm-user" placeholder="ADMIN_ID">
+                <input type="password" id="adm-pass" placeholder="PASSKEY">
+            </div>
+            <div id="admin-data" class="admin-scroll">Awaiting Authorization...</div>
+            <div style="display:flex; gap:5px;">
+                <button class="btn" onclick="adminFetch()">FETCH_STATS</button>
+                <button class="btn" onclick="triggerPurge()" style="background:#600;">PURGE_ALL</button>
+            </div>
             <button class="btn" onclick="closeAdmin()"
-                style="width:100%; border-color:#fff; color:#fff;">BACK_TO_TERMINAL</button>
+                style="background:transparent; border-color:#fff; color:#fff;">EXIT</button>
         </div>
     </div>
 
     <div id="terminal">
         <div id="header">
-            <span>TARGET: <span id="chan-label" style="color:#fff;">...</span></span>
-            <button onclick="location.reload()" class="btn-sm">DISCONNECT</button>
+            <span>TARGET: <span id="chan-label" style="color:#fff">...</span> <span id="target-dot"
+                    class="dot hidden"></span></span>
+            <button onclick="location.reload()"
+                style="background:none; border:1px solid #fff; color:#fff; cursor:pointer; font-size:0.8em; padding:2px 8px;">DISCONNECT</button>
         </div>
 
-        <div id="chat-box"></div>
-
-        <div id="reply-preview" class="hidden"
-            style="background:rgba(255,0,0,0.1); padding:8px; font-size:0.8em; border-top:1px solid red;">
-            Replying to <span id="reply-to" style="color:#fff;"></span>... <span onclick="cancelReply()"
-                style="float:right; cursor:pointer; color:#fff;">[CANCEL]</span>
+        <div id="chat-box">
+            <div id="presence-logs">
+                <div id="node-count" style="color:var(--green); font-weight:bold; margin-bottom:5px;"></div>
+                <div id="event-log"></div>
+            </div>
+            <div id="messages"></div>
         </div>
 
-        <div style="border-top:1px solid #200; padding-top:10px; display:flex;">
-            <span style="margin-right:10px; font-weight:bold;">></span>
+        <div id="reply-bar">
+            <span>Replying to <span id="reply-user" style="color:#fff"></span>...</span>
+            <span onclick="cancelReply()" style="float:right; cursor:pointer;">[X]</span>
+        </div>
+
+        <div style="border-top:1px solid #200; padding-top:10px; display:flex; align-items:center;">
+            <span style="font-weight:bold; margin-right:10px;">></span>
             <input type="text" id="chat-in" placeholder="Command..." autofocus autocomplete="off">
         </div>
     </div>
 
     <script>
-        let user = "", target = "", isGroup = false, lastId = 0, replyData = null;
+        let user = "", target = "", isGroup = false, lastId = 0, replyData = null, activeList = [];
+
+        function closeAlert() { document.getElementById('alert-overlay').classList.add('hidden'); focusIn(); }
+        function closeConfirm() { document.getElementById('confirm-overlay').classList.add('hidden'); focusIn(); }
+        function focusIn() { document.getElementById('chat-in').focus(); }
+
+        function uiAlert(msg, title = "SYSTEM_MSG") {
+            document.getElementById('alert-title').innerText = title;
+            document.getElementById('alert-msg').innerText = msg;
+            document.getElementById('alert-overlay').classList.remove('hidden');
+        }
+
+        function uiConfirm(msg, cb) {
+            document.getElementById('confirm-msg').innerText = msg;
+            document.getElementById('confirm-overlay').classList.remove('hidden');
+            document.getElementById('confirm-exec').onclick = () => { closeConfirm(); cb(); };
+        }
 
         function connect() {
             user = document.getElementById('my-alias').value.trim();
@@ -249,81 +350,98 @@
             if (!user || !target) return;
             document.getElementById('login-overlay').classList.add('hidden');
             document.getElementById('chan-label').innerText = target;
-            document.getElementById('chat-in').focus(); // Autofocus after login
+            if (!isGroup) document.getElementById('target-dot').classList.remove('hidden');
+            focusIn();
             sync();
             setInterval(sync, 2500);
         }
 
+        async function post(url, body) {
+            const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            return await r.json();
+        }
+
         async function sync() {
             try {
-                const res = await fetch(`/api/messages?user=${user}&target=${target}&is_group=${isGroup}&last_id=${lastId}`);
-                const data = await res.json();
+                const data = await post('/api/messages', { user, target, is_group: isGroup, last_id: lastId });
                 if (data && data.length > 0) {
-                    const box = document.getElementById('chat-box');
+                    const container = document.getElementById('messages');
                     data.forEach(m => {
                         if (document.getElementById(`msg-${m.id}`)) return;
                         const div = document.createElement('div');
-                        div.className = 'msg-container';
-                        div.id = `msg-${m.id}`;
+                        div.className = 'msg-container'; div.id = `msg-${m.id}`;
+
+                        // Swipe to reply
+                        let startX = 0;
+                        div.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+                        div.addEventListener('touchend', e => { if (e.changedTouches[0].clientX - startX > 60) setReply(m.sender, m.content); });
 
                         let time = m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
-                        let p = m.parent_content ? `<div class="reply-quote">${m.parent_sender}: ${m.parent_content}</div>` : '';
-
-                        div.innerHTML = `
-                        <div class="usr">
-                            ${m.sender} <span class="ts">${time}</span> 
-                            <span class="reply-link" onclick="setReply('${m.sender}','${m.content}')">[reply]</span>
-                        </div>
-                        ${p}
-                        <div style="color:red; margin-top:3px;">${m.content}</div>`;
-
-                        box.appendChild(div);
+                        let q = m.parent_content ? `<div class="reply-quote">${m.parent_sender}: ${m.parent_content}</div>` : '';
+                        div.innerHTML = `<div class="usr">${m.sender} <span class="ts">${time}</span> <span class="reply-btn" onclick="setReply('${m.sender}','${m.content}')">[reply]</span></div>${q}<div style="color:red; margin-top:3px;">${m.content}</div>`;
+                        container.appendChild(div);
                         if (m.id > lastId) lastId = m.id;
                     });
-                    box.scrollTop = box.scrollHeight;
+                    document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
                 }
+                updatePresence();
             } catch (e) { }
+        }
+
+        async function updatePresence() {
+            const current = await post('/api/presence', { target, is_group: isGroup, requester: user });
+            const log = document.getElementById('event-log');
+
+            if (isGroup) {
+                current.forEach(u => { if (!activeList.includes(u) && u !== user) log.innerHTML = `<div class="log-entry" style="color:var(--green)">> ${u} UPLINKED</div>` + log.innerHTML; });
+                activeList.forEach(u => { if (!current.includes(u) && u !== user) log.innerHTML = `<div class="log-entry" style="color:var(--red)">> ${u} LOST</div>` + log.innerHTML; });
+                document.getElementById('node-count').innerText = `ACTIVE_NODES: ${current.length}`;
+            } else {
+                const online = current.includes(target);
+                document.getElementById('target-dot').className = `dot ${online ? 'dot-online' : 'dot-offline'}`;
+            }
+            activeList = current;
         }
 
         function setReply(s, c) {
             replyData = { parent_sender: s, parent_content: c };
-            document.getElementById('reply-preview').classList.remove('hidden');
-            document.getElementById('reply-to').innerText = s;
-            document.getElementById('chat-in').focus();
+            document.getElementById('reply-user').innerText = s;
+            document.getElementById('reply-bar').style.display = 'block';
+            focusIn();
         }
 
-        function cancelReply() {
-            replyData = null;
-            document.getElementById('reply-preview').classList.add('hidden');
-            document.getElementById('chat-in').focus();
-        }
+        function cancelReply() { replyData = null; document.getElementById('reply-bar').style.display = 'none'; focusIn(); }
 
         document.getElementById('chat-in').addEventListener('keypress', async (e) => {
             if (e.key === 'Enter' && e.target.value !== "") {
                 const val = e.target.value; e.target.value = "";
                 const payload = { sender: user, recipient: target, content: val, is_group: isGroup, ...replyData };
                 cancelReply();
-                await fetch('/api/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                await post('/api/send', payload);
                 sync();
             }
         });
 
-        window.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.shiftKey && e.code === 'KeyX') {
-                document.getElementById('admin-overlay').classList.remove('hidden');
-            }
-        });
+        window.addEventListener('keydown', (e) => { if (e.ctrlKey && e.shiftKey && e.code === 'KeyX') document.getElementById('admin-overlay').classList.toggle('hidden'); });
+        function closeAdmin() { document.getElementById('admin-overlay').classList.add('hidden'); focusIn(); }
 
-        function closeAdmin() {
-            document.getElementById('admin-overlay').classList.add('hidden');
-            document.getElementById('chat-in').focus(); // Autofocus after admin close
+        async function adminFetch() {
+            const u = document.getElementById('adm-user').value, p = document.getElementById('adm-pass').value;
+            const res = await fetch('/api/admin/stats', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user: u, password: p }) });
+            if (res.status === 200) {
+                const d = await res.json();
+                let h = "<b>LATEST_USERS:</b><br>" + d.users.map(x => `• ${x.username} (Target: ${x.active_target})`).join('<br>');
+                h += "<br><br><b>LATEST_GROUPS:</b><br>" + d.groups.map(x => `• ${x.group_name}`).join('<br>');
+                document.getElementById('admin-data').innerHTML = h;
+            } else uiAlert("ACCESS_DENIED", "AUTH_ERROR");
         }
 
+        function triggerPurge() { uiConfirm("PURGE ALL GLOBAL LOGS?", adminPurge); }
         async function adminPurge() {
             const u = document.getElementById('adm-user').value, p = document.getElementById('adm-pass').value;
-            const res = await fetch('/api/admin/clear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user: u, password: p }) });
-            if (res.status === 200) { alert("PURGE_COMPLETE"); lastId = 0; document.getElementById('chat-box').innerHTML = ""; closeAdmin(); }
-            else { alert("AUTH_FAILED"); }
+            const data = await post('/api/admin/clear', { user: u, password: p });
+            if (data.status === "purged") { uiAlert("DATABASE_CLEARED"); lastId = 0; document.getElementById('messages').innerHTML = ""; }
+            else uiAlert("DENIED");
         }
     </script>
 </body>

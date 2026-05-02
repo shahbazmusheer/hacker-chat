@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from supabase import create_client, Client
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional, List
 import os
 
@@ -17,7 +17,21 @@ ADMIN_PASS = os.environ.get("ADMIN_PASS", "hacker123")
 supabase: Client = create_client(URL, KEY) if URL and KEY else None
 
 
-class Msg(BaseModel):
+# --- REQUEST MODELS ---
+class MessageRequest(BaseModel):
+    user: str
+    target: str
+    is_group: bool
+    last_id: Optional[int] = 0
+
+
+class PresenceRequest(BaseModel):
+    target: str
+    is_group: bool
+    requester: str
+
+
+class MsgSendRequest(BaseModel):
     sender: str
     recipient: str
     content: str
@@ -32,58 +46,68 @@ class AdminAction(BaseModel):
     target: Optional[str] = None
 
 
-@app.get("/api/messages")
-def get_messages(user: str, target: str, is_group: bool, last_id: int = 0):
-    if not supabase:
-        return []
+# --- API ENDPOINTS (ALL POST) ---
+
+
+@app.post("/api/messages")
+def fetch_messages(req: MessageRequest):
     try:
-        # Heartbeat
+        # Heartbeat update
         supabase.table("chat_users").upsert(
-            {"username": user, "last_seen": "now()", "active_target": target}
+            {"username": req.user, "last_seen": "now()", "active_target": req.target}
         ).execute()
 
+        # Build Query
         query = supabase.table("chat_messages").select("*")
-        if is_group:
-            query = query.eq("recipient", target)
+        if req.is_group:
+            query = query.eq("recipient", req.target)
         else:
             query = query.or_(
-                f"and(sender.eq.{user},recipient.eq.{target}),and(sender.eq.{target},recipient.eq.{user})"
+                f"and(sender.eq.{req.user},recipient.eq.{req.target}),and(sender.eq.{req.target},recipient.eq.{req.user})"
             )
 
-        # Load only new messages
-        if last_id > 0:
-            # Fixed .order() syntax
-            res = query.gt("id", last_id).order("id").execute()
+        if req.last_id and req.last_id > 0:
+            res = query.gt("id", req.last_id).order("id").execute()
             return res.data
         else:
-            # Fixed .order() syntax (using desc=True)
             res = query.order("id", desc=True).limit(50).execute()
             data = res.data
             data.reverse()
             return data
-    except Exception as e:
-        # Return error as a list so the frontend can display it
-        return [{"sender": "SYSTEM", "content": f"ERR: {str(e)}", "id": 0}]
+    except:
+        return []
 
 
 @app.post("/api/send")
-def send_message(msg: Msg):
+def send_message(msg: MsgSendRequest):
     try:
         supabase.table("chat_messages").insert(msg.dict()).execute()
         return {"status": "sent"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+    except:
+        return {"status": "error"}
 
 
-@app.get("/api/presence")
-def get_presence(target: str, is_group: bool, requester: str):
+@app.post("/api/presence")
+def fetch_presence(req: PresenceRequest):
     try:
-        res = (
-            supabase.table("chat_users")
-            .select("username")
-            .eq("active_target", target)
-            .execute()
-        )
+        threshold = (datetime.now(timezone.utc) - timedelta(seconds=15)).isoformat()
+        if req.is_group:
+            res = (
+                supabase.table("chat_users")
+                .select("username")
+                .eq("active_target", req.target)
+                .gt("last_seen", threshold)
+                .execute()
+            )
+        else:
+            res = (
+                supabase.table("chat_users")
+                .select("username")
+                .eq("username", req.target)
+                .eq("active_target", req.requester)
+                .gt("last_seen", threshold)
+                .execute()
+            )
         return [row["username"] for row in res.data]
     except:
         return []
@@ -92,8 +116,23 @@ def get_presence(target: str, is_group: bool, requester: str):
 @app.post("/api/admin/stats")
 def admin_stats(req: AdminAction):
     if req.user == ADMIN_USER and req.password == ADMIN_PASS:
-        u = supabase.table("chat_users").select("*").execute().data
-        g = supabase.table("chat_groups").select("*").execute().data
+        # Get last 10 users and groups
+        u = (
+            supabase.table("chat_users")
+            .select("*")
+            .order("last_seen", desc=True)
+            .limit(10)
+            .execute()
+            .data
+        )
+        g = (
+            supabase.table("chat_groups")
+            .select("*")
+            .order("created_at", desc=True)
+            .limit(10)
+            .execute()
+            .data
+        )
         return {"users": u, "groups": g}
     raise HTTPException(status_code=401)
 

@@ -1,15 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>HACKER CHAT PRO</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HACKER CHAT ZETA</title>
     <style>
         :root {
             --red: #ff0000;
             --dark: #1a0000;
             --bg: #050000;
             --green: #0f0;
-            --glow: 0 0 10px rgba(255, 0, 0, 0.8);
+            --glow: 0 0 10px #f00;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -17,10 +24,12 @@
             color: var(--red);
             font-family: 'Courier New', monospace;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             overflow: hidden;
+            height: 100vh;
         }
 
+        /* CRT Effect */
         body::after {
             content: "";
             position: fixed;
@@ -35,98 +44,67 @@
         }
 
         #terminal {
-            height: 90vh;
-            border: 1px solid var(--red);
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            padding: 15px;
+            padding: 10px;
             position: relative;
+            border: 1px solid var(--dark);
         }
 
+        /* Header */
+        #header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--red);
+            padding-bottom: 5px;
+            font-size: 0.8em;
+            align-items: center;
+        }
+
+        #private-dot {
+            height: 10px;
+            width: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        /* Chat Body */
         #chat-box {
             flex-grow: 1;
             overflow-y: auto;
+            padding-top: 10px;
+            position: relative;
         }
 
-        /* INCREASED FONT SIZE FOR LOGS */
-        #presence-container {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            text-align: right;
-            width: 300px;
-            z-index: 100;
-            pointer-events: none;
-        }
-
-        #presence-list {
-            font-size: 1.2em;
+        #floating-nodes {
+            position: sticky;
+            top: 0;
+            float: right;
             color: var(--green);
+            font-size: 1em;
             font-weight: bold;
-            margin-bottom: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px;
+            z-index: 100;
             text-shadow: 0 0 5px var(--green);
         }
 
-        #event-log {
-            font-size: 1.1em;
-            height: 100px;
-            overflow: hidden;
-            opacity: 1;
-            font-weight: bold;
-        }
-
-        .log-join {
-            color: var(--green);
-            margin-bottom: 4px;
-            text-transform: uppercase;
-        }
-
-        .log-left {
-            color: var(--red);
-            margin-bottom: 4px;
-            text-transform: uppercase;
-        }
-
-        /* DOTS */
-        .dot {
-            height: 12px;
-            width: 12px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-left: 10px;
-            vertical-align: middle;
-        }
-
-        .dot-online {
-            background: var(--green);
-            box-shadow: 0 0 12px var(--green);
-            animation: pulse 1s infinite;
-        }
-
-        .dot-offline {
-            background: #400;
-        }
-
-        @keyframes pulse {
-            0% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.3;
-            }
-
-            100% {
-                opacity: 1;
-            }
-        }
-
-        /* UI ELEMENTS */
-        .msg {
-            margin: 8px 0;
-            border-left: 2px solid var(--red);
+        .msg-container {
+            margin-bottom: 12px;
+            touch-action: pan-y;
+            position: relative;
+            border-left: 2px solid var(--dark);
             padding-left: 10px;
-            font-size: 1.1em;
+            transition: transform 0.2s;
+        }
+
+        .msg-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75em;
+            margin-bottom: 3px;
         }
 
         .usr {
@@ -134,17 +112,55 @@
             font-weight: bold;
         }
 
-        input {
+        .ts {
+            color: #500;
+            font-size: 0.9em;
+        }
+
+        .dots {
+            color: var(--red);
+            cursor: pointer;
+            padding: 0 5px;
+        }
+
+        /* Reply Logic UI */
+        .reply-quote {
+            background: #150000;
+            border-left: 2px solid #fff;
+            padding: 5px;
+            font-size: 0.8em;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        #reply-preview {
+            display: none;
+            background: #200;
+            border-top: 1px solid var(--red);
+            padding: 8px;
+            font-size: 0.85em;
+            color: #fff;
+        }
+
+        /* Input Area */
+        #input-area {
+            display: flex;
+            align-items: center;
+            border-top: 1px solid #200;
+            padding: 5px 0;
+        }
+
+        input[type="text"] {
             background: transparent;
             border: none;
             color: #fff;
-            outline: none;
             font-family: inherit;
-            font-size: 1.2em;
+            font-size: 1.1em;
+            outline: none;
             width: 100%;
         }
 
-        /* MODALS */
+        /* Modals */
         .overlay {
             position: fixed;
             top: 0;
@@ -152,248 +168,272 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 200;
         }
 
         .modal {
             background: #000;
             border: 1px solid var(--red);
-            padding: 30px;
-            width: 450px;
+            padding: 25px;
+            width: 90%;
+            max-width: 450px;
             text-align: center;
-            box-shadow: 0 0 40px var(--red);
+            box-shadow: 0 0 30px var(--red);
         }
 
         .hidden {
             display: none !important;
         }
 
-        #admin-overlay {
-            z-index: 300;
-        }
-
-        #confirm-overlay {
-            z-index: 400;
-        }
-
-        #notification-area {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 500;
-        }
-
         .btn {
             background: var(--dark);
             color: var(--red);
             border: 1px solid var(--red);
-            padding: 10px 20px;
+            padding: 10px 15px;
             cursor: pointer;
             font-family: inherit;
-            margin: 5px;
             text-transform: uppercase;
-        }
-
-        .btn:hover {
-            background: var(--red);
-            color: #000;
-        }
-
-        .notify {
-            background: #100;
-            border: 1px solid var(--red);
-            color: #fff;
-            padding: 15px;
-            margin-top: 10px;
-            font-size: 1em;
-            box-shadow: var(--glow);
+            margin: 5px;
         }
 
         .admin-data {
-            text-align: left;
-            font-size: 0.9em;
             height: 150px;
             overflow-y: auto;
             background: #080000;
-            padding: 10px;
-            margin: 10px 0;
             border: 1px solid #300;
             color: var(--green);
+            text-align: left;
+            padding: 10px;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        /* Notifications */
+        #notif-area {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            z-index: 3000;
+        }
+
+        .toast {
+            background: #100;
+            border: 1px solid var(--red);
+            color: #fff;
+            padding: 10px;
+            margin-top: 5px;
+            font-size: 0.8em;
+            animation: slide 0.3s;
+        }
+
+        @keyframes slide {
+            from {
+                transform: translateX(100%);
+            }
+
+            to {
+                transform: translateX(0);
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <div id="notification-area"></div>
+    <div id="notif-area"></div>
 
-    <!-- CONFIRMATION MODAL -->
+    <!-- CONFIRMATION -->
     <div id="confirm-overlay" class="overlay hidden">
-        <div class="modal" style="border-color: #fff;">
-            <h2 style="color:#fff; animation: blink 0.5s infinite;">!! WARNING !!</h2>
-            <p id="confirm-msg" style="color:#fff;">EXECUTE DESTRUCTIVE COMMAND?</p>
+        <div class="modal">
+            <h2 style="color:#fff">CRITICAL_WARNING</h2>
+            <p id="confirm-msg" style="color:#fff">EXECUTE DESTRUCTIVE COMMAND?</p>
             <button class="btn" id="confirm-yes">EXECUTE</button>
-            <button class="btn" id="confirm-no" style="color:#fff;">ABORT</button>
+            <button class="btn" id="confirm-no" style="color:#fff">ABORT</button>
         </div>
     </div>
 
-    <!-- LOGIN MODAL -->
+    <!-- LOGIN -->
     <div id="login-overlay" class="overlay">
         <div class="modal">
-            <h2>UPLINK_INIT</h2>
+            <h2 style="color:#fff">UPLINK_INIT</h2>
             <input type="text" id="my-alias" placeholder="IDENT_CODE"
-                style="border: 1px solid #333; margin-bottom: 10px; text-align: center; background: #000; color: #fff;">
+                style="border: 1px solid #333; text-align: center; background: #000; color:#fff;">
             <input type="text" id="target-id" placeholder="TARGET_NODE"
-                style="border: 1px solid #333; text-align: center; background: #000; color: #fff;">
-            <div style="margin: 15px 0; display: flex; align-items: center; justify-content: space-evenly;">
-                <label style="display:flex; gap:10px; align-items:base-line;"><input type="radio" name="type"
-                        value="private" checked> PRIVATE</label>
-                <label style="display:flex; gap:10px; align-items:base-line;"><input type="radio" name="type"
-                        value="group"> GROUP</label>
+                style="border: 1px solid #333; text-align: center; background: #000; color:#fff;">
+            <div style="margin: 15px 0;">
+                <label><input type="radio" name="type" value="private" checked> PRIVATE</label> &nbsp;
+                <label><input type="radio" name="type" value="group"> GROUP</label>
             </div>
             <button class="btn" onclick="connect()" style="width: 100%;">ESTABLISH_UPLINK</button>
         </div>
     </div>
 
     <!-- ADMIN CONSOLE -->
-    <div id="admin-overlay" class="overlay hidden">
+    <div id="admin-overlay" class="overlay hidden" style="z-index: 2500;">
         <div class="modal">
-            <h2 style="color: #fff;">ADMIN_CONSOLE</h2>
-            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+            <h2 style="color:#fff">ADMIN_v5_CONSOLE</h2>
+            <div style="display:flex; gap:5px; margin-bottom:10px;">
                 <input type="text" id="adm-user" placeholder="ADMIN_ID"
-                    style="width: 50%; border: 1px solid #333; background: #000; color: #fff;">
+                    style="width:50%; border:1px solid #333; background:#000; color:#fff;">
                 <input type="password" id="adm-pass" placeholder="PASSKEY"
-                    style="width: 50%; border: 1px solid #333; background: #000; color: #fff;">
+                    style="width:50%; border:1px solid #333; background:#000; color:#fff;">
             </div>
-            <div id="admin-data" class="admin-data">Awaiting Authorization...</div>
+            <div id="admin-data" class="admin-data">SECURE_AUTH_REQUIRED...</div>
             <button class="btn" onclick="adminFetch()">STATS</button>
-            <button class="btn" onclick="triggerPurge()" style="background: #600;">PURGE_ALL_LOGS</button>
-            <hr border="1" color="#200" style="margin: 15px 0;">
-            <input type="text" id="new-group" placeholder="NEW_GROUP_ID"
-                style="width: 60%; border: 1px solid #333; background: #000; color: #fff;">
-            <button class="btn" onclick="adminCreateGroup()">CREATE_GROUP</button>
+            <button class="btn" onclick="triggerPurge()" style="background:#500;">PURGE_LOGS</button>
+            <hr border="1" color="#200">
+            <input type="text" id="new-group" placeholder="GROUP_ID"
+                style="width:60%; border:1px solid #333; background:#000; color:#fff;">
+            <button class="btn" onclick="adminCreateGroup()">CREATE</button>
             <br><br>
             <button onclick="closeAdmin()" style="background:none; color:#444; border:none; cursor:pointer;">[
-                EXIT_CONSOLE ]</button>
+                CLOSE_CONSOLE ]</button>
         </div>
     </div>
 
-    <!-- TERMINAL -->
     <div id="terminal">
-        <div id="presence-container">
-            <div id="presence-list">SCANNING...</div>
-            <div id="event-log"></div>
+        <div id="header">
+            <span>TARGET: <span id="chan-label">...</span> <span id="private-dot"></span></span>
+            <a href="javascript:location.reload()"
+                style="color:#fff; text-decoration:none; border:1px solid #fff; padding:2px 5px;">DISCONNECT</a>
         </div>
-        <div
-            style="font-size: 1em; border-bottom: 1px solid #300; padding-bottom: 10px; display: flex; align-items: center;">
-            <span id="header-text">SYSTEM_IDLE</span>
-            <span id="target-dot" class="dot hidden"></span>
+
+        <div id="chat-box">
+            <div id="floating-nodes" class="hidden">ACTIVE_NODES: 0</div>
+            <div id="messages"></div>
         </div>
-        <div id="chat-box"></div>
-        <div style="display: flex; align-items: center; border-top: 1px solid #200; padding-top: 10px;">
-            <span id="prompt" style="margin-right: 10px; font-weight: bold;">></span>
-            <input type="text" id="chat-in" autofocus autocomplete="off">
+
+        <div id="reply-preview">
+            <div style="display:flex; justify-content:space-between">
+                <span id="reply-text">...</span>
+                <span onclick="cancelReply()" style="cursor:pointer; color:#fff;">[X]</span>
+            </div>
+        </div>
+
+        <div id="input-area">
+            <span style="font-weight:bold; margin-right:8px;">></span>
+            <input type="text" id="chat-in" placeholder="Command..." autofocus autocomplete="off">
         </div>
     </div>
 
     <script>
-        let user = "", target = "", isGroup = false, activeUsers = [];
+        let user = "", target = "", isGroup = false, lastTimestamp = null, replyData = null;
 
         function notify(t, s = "info") {
-            const area = document.getElementById('notification-area');
-            const n = document.createElement('div');
-            n.className = 'notify';
+            const n = document.createElement('div'); n.className = 'toast';
             n.innerText = `[${s.toUpperCase()}] ${t}`;
-            area.appendChild(n);
+            document.getElementById('notif-area').appendChild(n);
             setTimeout(() => n.remove(), 4000);
         }
 
-        function hackerConfirm(msg, cb) {
-            const o = document.getElementById('confirm-overlay');
+        function hConfirm(msg, cb) {
             document.getElementById('confirm-msg').innerText = msg;
-            o.classList.remove('hidden');
-            document.getElementById('confirm-yes').onclick = () => { o.classList.add('hidden'); cb(); };
-            document.getElementById('confirm-no').onclick = () => o.classList.add('hidden');
+            document.getElementById('confirm-overlay').classList.remove('hidden');
+            document.getElementById('confirm-yes').onclick = () => { document.getElementById('confirm-overlay').classList.add('hidden'); cb(); };
+            document.getElementById('confirm-no').onclick = () => document.getElementById('confirm-overlay').classList.add('hidden');
         }
 
         function connect() {
             user = document.getElementById('my-alias').value.trim();
             target = document.getElementById('target-id').value.trim();
             isGroup = document.querySelector('input[name="type"]:checked').value === "group";
-            if (!user || !target) return notify("CREDENTIALS_MISSING", "fail");
+            if (!user || !target) return notify("CREDENTIALS_REQUIRED", "fail");
+
             document.getElementById('login-overlay').classList.add('hidden');
-            document.getElementById('header-text').innerText = `${isGroup ? 'GROUP' : 'PRIVATE'}: ${target}`;
-            document.getElementById('prompt').innerText = `${user}@${target}:~$`;
-            if (!isGroup) document.getElementById('target-dot').classList.remove('hidden');
-            document.getElementById('chat-in').focus()
-            setInterval(sync, 2500);
+            document.getElementById('chan-label').innerText = target;
+            if (isGroup) document.getElementById('floating-nodes').classList.remove('hidden');
+
             sync();
+            setInterval(sync, 2500);
+            setInterval(updatePresence, 5000);
             notify("UPLINK_ESTABLISHED", "success");
         }
 
         async function sync() {
-            try {
-                // 1. Load Messages
-                const mRes = await fetch(`/api/messages?user=${user}&target=${target}&is_group=${isGroup}`);
-                const msgs = await mRes.json();
-                document.getElementById('chat-box').innerHTML = msgs.map(m => `<div class="msg"><span class="usr">${m.sender}:</span> ${m.content}</div>`).join('');
+            let url = `/api/messages?user=${user}&target=${target}&is_group=${isGroup}`;
+            if (lastTimestamp) url += `&last_ts=${lastTimestamp}`;
+
+            const res = await fetch(url);
+            const data = await res.json();
+
+            if (data.length > 0) {
+                const container = document.getElementById('messages');
+                data.forEach(m => {
+                    const div = document.createElement('div'); div.className = 'msg-container';
+                    const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    // Swipe to reply logic
+                    let startX = 0;
+                    div.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+                    div.addEventListener('touchend', e => { if (e.changedTouches[0].clientX - startX > 60) setReply(m.sender, m.content); });
+
+                    let parentHtml = m.parent_content ? `<div class="reply-quote">${m.parent_sender}: ${m.parent_content}</div>` : '';
+
+                    div.innerHTML = `
+                    <div class="msg-header">
+                        <span class="usr">${m.sender}</span>
+                        <span><span class="dots" onclick="setReply('${m.sender}','${m.content}')">[reply]</span> <span class="ts">${time}</span></span>
+                    </div>
+                    ${parentHtml}
+                    <div style="color:var(--red);">${m.content}</div>`;
+                    container.appendChild(div);
+                    lastTimestamp = m.created_at;
+                });
                 document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
-
-                // 2. Load Presence (Pass 'user' as requester)
-                const pRes = await fetch(`/api/presence?target=${target}&is_group=${isGroup}&requester=${user}`);
-                const currentUsers = await pRes.json();
-
-                if (isGroup) {
-                    handleEvents(currentUsers);
-                    document.getElementById('presence-list').innerText = `ACTIVE_NODES: ${currentUsers.length}`;
-                } else {
-                    // In private chat, currentUsers will contain target name if they are online and looking at us
-                    const online = currentUsers.includes(target);
-                    document.getElementById('target-dot').className = `dot ${online ? 'dot-online' : 'dot-offline'}`;
-                    document.getElementById('presence-list').innerText = online ? "TARGET_ONLINE" : "TARGET_OFFLINE";
-                }
-                activeUsers = currentUsers;
-            } catch (e) { }
+            }
         }
 
-        function handleEvents(newList) {
-            const log = document.getElementById('event-log');
-            newList.forEach(u => { if (!activeUsers.includes(u) && u !== user) log.innerHTML = `<div class="log-join">> ${u} established uplink</div>` + log.innerHTML; });
-            activeUsers.forEach(u => { if (!newList.includes(u) && u !== user) log.innerHTML = `<div class="log-left">> ${u} connection lost</div>` + log.innerHTML; });
+        async function updatePresence() {
+            const res = await fetch(`/api/presence?target=${target}&is_group=${isGroup}&requester=${user}`);
+            const active = await res.json();
+            if (isGroup) document.getElementById('floating-nodes').innerText = `ACTIVE_NODES: ${active.length}`;
+            else {
+                const dot = document.getElementById('private-dot');
+                dot.className = active.includes(target) ? 'dot-online' : 'dot-offline';
+            }
         }
+
+        function setReply(s, c) {
+            replyData = { parent_sender: s, parent_content: c };
+            document.getElementById('reply-preview').style.display = 'block';
+            document.getElementById('reply-text').innerText = `REPLYING TO: ${s}`;
+            document.getElementById('chat-in').focus();
+        }
+
+        function cancelReply() { replyData = null; document.getElementById('reply-preview').style.display = 'none'; }
 
         document.getElementById('chat-in').addEventListener('keypress', async (e) => {
-            if (e.key === 'Enter' && e.target.value !== "") {
-                const v = e.target.value; e.target.value = "";
-                await fetch('/api/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sender: user, recipient: target, content: v, is_group: isGroup }) });
+            if (e.key === 'Enter' && e.target.value.trim() !== "") {
+                const val = e.target.value; e.target.value = "";
+                const payload = { sender: user, recipient: target, content: val, is_group: isGroup, ...replyData };
+                cancelReply();
+                await fetch('/api/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 sync();
             }
         });
 
+        // ADMIN 
         window.addEventListener('keydown', (e) => { if (e.ctrlKey && e.shiftKey && e.code === 'KeyX') document.getElementById('admin-overlay').classList.toggle('hidden'); });
-        function closeAdmin() {
-            document.getElementById('admin-overlay').classList.add('hidden');
-            document.getElementById('chat-in').focus()
-        }
+        function closeAdmin() { document.getElementById('admin-overlay').classList.add('hidden'); }
 
         async function adminFetch() {
             const u = document.getElementById('adm-user').value, p = document.getElementById('adm-pass').value;
             const res = await fetch('/api/admin/stats', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user: u, password: p }) });
             if (res.status === 200) {
                 const d = await res.json();
-                document.getElementById('admin-data').innerHTML = `<b>USERS:</b><br>${d.users.map(x => x.username).join(', ')}<br><br><b>GROUPS:</b><br>${d.groups.map(x => x.group_name).join(', ')}`;
-                notify("STATS_LOADED", "success");
-            } else notify("AUTH_FAIL", "fail");
+                document.getElementById('admin-data').innerHTML = `<b>NODES:</b><br>${d.users.map(x => x.username).join(', ')}<br><br><b>GROUPS:</b><br>${d.groups.map(x => x.group_name).join(', ')}`;
+                notify("AUTH_SUCCESS", "success");
+            } else notify("DENIED", "fail");
         }
 
-        function triggerPurge() { hackerConfirm("WIPE ALL DATABASE LOGS?", adminPurge); }
+        function triggerPurge() { hConfirm("PURGE ALL DATABASE LOGS?", adminPurge); }
         async function adminPurge() {
             const u = document.getElementById('adm-user').value, p = document.getElementById('adm-pass').value;
             const res = await fetch('/api/admin/clear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user: u, password: p }) });
-            if (res.status === 200) { notify("LOGS_PURGED", "success"); sync(); } else notify("PURGE_DENIED", "fail");
+            if (res.status === 200) { notify("WIPE_COMPLETE", "success"); sync(); } else notify("WIPE_DENIED", "fail");
         }
 
         async function adminCreateGroup() {

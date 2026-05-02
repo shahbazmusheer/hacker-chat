@@ -28,18 +28,24 @@
             padding: 0;
             overflow: hidden;
             height: 100dvh;
+            /* BACKGROUND LOGO */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='red' fill-opacity='0.07'%3E%3Cpath d='M12 .5c-4.4 0-8 3.6-8 8v2c0 .3 0 .6.1.9l-1.1 2.1c-.2.4-.1.9.3 1.1.1.1.3.1.4.1.3 0 .6-.2.7-.5l1-1.9c.7 1.3 1.8 2.4 3.1 3.1l-1.9 1c-.4.2-.5.7-.3 1.1.1.3.5.5.8.5.1 0 .2 0 .3-.1l2.1-1.1c.3.1.6.1.9.1h4c.3 0 .6 0 .9-.1l2.1 1.1c.1 0 .2.1.3.1.3 0 .7-.2.8-.5.2-.4.1-.9-.3-1.1l-1.9-1c1.3-.7 2.4-1.8 3.1-3.1l1 1.9c.1.3.4.5.7.5.1 0 .3 0 .4-.1.4-.2.5-.7.3-1.1l-1.1-2.1c.1-.3.1-.6.1-.9v-2c0-4.4-3.6-8-8-8zm-3 9c-.8 0-1.5-.7-1.5-1.5S8.2 6.5 9 6.5s1.5.7 1.5 1.5S9.8 9.5 9 9.5zm6 0c-.8 0-1.5-.7-1.5-1.5s.7-1.5 1.5-1.5 1.5.7 1.5 1.5-.7 1.5-1.5 1.5z'/%3E%3C/svg%3E");
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 80%;
+            background-attachment: fixed;
         }
 
         /* Hacker Scrollbar */
-        ::-webkit-scrollbar {
+        #chat-box::-webkit-scrollbar {
             width: 4px;
         }
 
-        ::-webkit-scrollbar-track {
+        #chat-box::-webkit-scrollbar-track {
             background: #000;
         }
 
-        ::-webkit-scrollbar-thumb {
+        #chat-box::-webkit-scrollbar-thumb {
             background: var(--red);
             box-shadow: var(--glow);
             border-radius: 10px;
@@ -84,37 +90,12 @@
             position: relative;
         }
 
-        /* Presence Area */
-        #presence-panel {
-            position: sticky;
-            top: 0;
-            float: right;
-            text-align: right;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        #presence-list {
-            color: var(--green);
-            font-weight: bold;
-            font-size: 0.9em;
-            text-shadow: 0 0 5px var(--green);
-        }
-
-        #event-log {
-            font-size: 0.8em;
-            height: 60px;
-            overflow: hidden;
-            opacity: 1;
-            font-weight: bold;
-        }
-
-        /* Messages */
         .msg-container {
             margin-bottom: 18px;
             border-left: 2px solid #200;
             padding-left: 12px;
             touch-action: pan-y;
+            background: rgba(5, 0, 0, 0.2);
         }
 
         .usr {
@@ -151,7 +132,7 @@
             word-break: break-word;
         }
 
-        /* Transparent Modals (70% Opacity) */
+        /* Modals (70% Trans) */
         .overlay {
             position: fixed;
             top: 0;
@@ -159,7 +140,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(1px);
+            backdrop-filter: blur(8px);
             z-index: 2000;
             display: flex;
             align-items: center;
@@ -180,7 +161,6 @@
             display: none !important;
         }
 
-        /* Single Row Radio Fix */
         .flex-row {
             display: flex;
             justify-content: center;
@@ -188,17 +168,9 @@
             gap: 20px;
             margin: 15px 0;
             color: #fff;
-            font-size: 0.9em;
         }
 
-        .flex-row label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-        }
-
-        /* Input Fixes */
+        /* Input Area */
         #input-container {
             flex-shrink: 0;
             padding-bottom: 10px;
@@ -305,7 +277,7 @@
 <body>
     <div id="notif-area" style="position:fixed; bottom:110px; right:20px; z-index:5000;"></div>
 
-    <!-- UI ALERTS (70% Trans) -->
+    <!-- UI ALERTS -->
     <div id="alert-overlay" class="overlay hidden" style="z-index: 6000;">
         <div class="modal">
             <h2 id="alert-title" style="color:#fff">SYSTEM_MSG</h2>
@@ -314,7 +286,7 @@
         </div>
     </div>
 
-    <!-- UI CONFIRM (70% Trans) -->
+    <!-- UI CONFIRM -->
     <div id="confirm-overlay" class="overlay hidden" style="z-index: 5500;">
         <div class="modal">
             <h2 style="color:#fff">!! WARNING !!</h2>
@@ -327,18 +299,17 @@
         </div>
     </div>
 
-    <!-- LOGIN (70% Trans) -->
+    <!-- LOGIN -->
     <div id="login-overlay" class="overlay">
         <div class="modal">
-            <h2 style="color:#fff; letter-spacing: 2px; margin-bottom: 10px;">UPLINK_INIT</h2>
+            <h2 style="color:#fff; letter-spacing: 2px;">UPLINK_INIT</h2>
 
-            <!-- NEW CONCISE DESCRIPTION -->
             <div
                 style="font-size: 0.75em; color: #888; text-align: left; margin-bottom: 20px; line-height: 1.4; border: 1px solid #300; padding: 10px; background: rgba(0,0,0,0.3);">
                 [SYSTEM_MANUAL]<br>
-                > <b style="color:var(--red)">IDENT_CODE:</b> Your unique hacker alias for this session.<br>
-                > <b style="color:var(--red)">TARGET_NODE:</b> Recipient's alias (Private) or Group name.<br>
-                > <b style="color:var(--red)">PROTOCOL:</b> All uplink logs self-destruct after 48 hours.
+                > <b style="color:var(--red)">IDENT_CODE:</b> Your unique alias for this session.<br>
+                > <b style="color:var(--red)">TARGET_NODE:</b> Recipient's alias or Group name.<br>
+                > <b style="color:var(--red)">PROTOCOL:</b> Uplink logs self-destruct after 48 hours.
             </div>
 
             <input type="text" id="my-alias" placeholder="IDENT_CODE">
@@ -351,8 +322,7 @@
         </div>
     </div>
 
-
-    <!-- ADMIN (70% Trans) -->
+    <!-- ADMIN -->
     <div id="admin-overlay" class="overlay hidden" style="z-index:3000;">
         <div class="modal">
             <h2 style="color:#fff">ADMIN_CONSOLE</h2>
@@ -379,9 +349,9 @@
         </div>
 
         <div id="chat-box">
-            <div id="presence-panel">
+            <div id="presence-panel"
+                style="position: absolute; top: 10px; right: 10px; text-align: right; color: var(--green); font-size: 0.9em; pointer-events: none;">
                 <div id="presence-list">SCANNING...</div>
-                <div id="event-log"></div>
             </div>
             <div id="messages"></div>
         </div>
@@ -461,10 +431,7 @@
         async function updatePresence() {
             const current = await post('/api/presence', { target, is_group: isGroup, requester: user });
             if (isGroup) {
-                const log = document.getElementById('event-log');
-                current.forEach(u => { if (!activeList.includes(u) && u !== user) log.innerHTML = `<div style="color:var(--green)">> ${u} JOINED</div>` + log.innerHTML; });
-                activeList.forEach(u => { if (!current.includes(u) && u !== user) log.innerHTML = `<div style="color:var(--red)">> ${u} LEFT</div>` + log.innerHTML; });
-                document.getElementById('presence-list').innerText = `ACTIVE_NODES: ${current.length}`;
+                document.getElementById('presence-list').innerText = `NODES: ${current.length}`;
             } else {
                 const online = current.includes(target);
                 document.getElementById('target-dot').className = `dot ${online ? 'dot-online' : 'dot-offline'}`;
@@ -473,7 +440,6 @@
         }
 
         function setReply(s, c) {
-            // FIX: Explicitly refresh all reply fields on every selection
             replyData = { parent_sender: s, parent_content: c };
             document.getElementById('reply-user').innerText = s;
             document.getElementById('reply-preview-text').innerText = c.length > 50 ? c.substring(0, 50) + "..." : c;

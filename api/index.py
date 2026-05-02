@@ -2,8 +2,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from supabase import create_client, Client
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import datetime, timezone
+from typing import Optional, List
 import os
 
 app = FastAPI()
@@ -33,7 +33,9 @@ class AdminAction(BaseModel):
 
 
 @app.get("/api/messages")
-def get_messages(user: str, target: str, is_group: bool, last_id: Optional[int] = None):
+def get_messages(user: str, target: str, is_group: bool, last_id: int = 0):
+    if not supabase:
+        return []
     try:
         # Heartbeat
         supabase.table("chat_users").upsert(
@@ -41,8 +43,6 @@ def get_messages(user: str, target: str, is_group: bool, last_id: Optional[int] 
         ).execute()
 
         query = supabase.table("chat_messages").select("*")
-
-        # Filtering logic
         if is_group:
             query = query.eq("recipient", target)
         else:
@@ -50,22 +50,16 @@ def get_messages(user: str, target: str, is_group: bool, last_id: Optional[int] 
                 f"and(sender.eq.{user},recipient.eq.{target}),and(sender.eq.{target},recipient.eq.{user})"
             )
 
-        # ID-based Delta loading (Much more stable than timestamps)
-        if last_id and last_id > 0:
-            query = query.gt("id", last_id).order("id")
+        # Load only new messages
+        if last_id > 0:
+            res = query.gt("id", last_id).order("id").execute()
         else:
-            query = query.order("id", descending=True).limit(50)
+            res = query.order("id", descending=True).limit(50).execute()
+            res.data.reverse()
 
-        res = query.execute()
-        data = res.data
-
-        if not last_id:
-            data.reverse()
-
-        return data
+        return res.data
     except Exception as e:
-        print(f"Error: {e}")
-        return []
+        return [{"sender": "SYSTEM", "content": f"DATABASE_ERROR: {str(e)}"}]
 
 
 @app.post("/api/send")
@@ -73,36 +67,26 @@ def send_message(msg: Msg):
     try:
         supabase.table("chat_messages").insert(msg.dict()).execute()
         return {"status": "sent"}
-    except:
-        return {"status": "error"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 
 @app.get("/api/presence")
 def get_presence(target: str, is_group: bool, requester: str):
     try:
-        threshold = (datetime.now(timezone.utc) - timedelta(seconds=15)).isoformat()
-        if is_group:
-            res = (
-                supabase.table("chat_users")
-                .select("username")
-                .eq("active_target", target)
-                .gt("last_seen", threshold)
-                .execute()
-            )
-        else:
-            res = (
-                supabase.table("chat_users")
-                .select("username")
-                .eq("username", target)
-                .eq("active_target", requester)
-                .gt("last_seen", threshold)
-                .execute()
-            )
+        # 15 second threshold
+        res = (
+            supabase.table("chat_users")
+            .select("username")
+            .eq("active_target", target)
+            .execute()
+        )
         return [row["username"] for row in res.data]
     except:
         return []
 
 
+# Admin Panel Functions
 @app.post("/api/admin/stats")
 def admin_stats(req: AdminAction):
     if req.user == ADMIN_USER and req.password == ADMIN_PASS:
@@ -112,18 +96,9 @@ def admin_stats(req: AdminAction):
     raise HTTPException(status_code=401)
 
 
-@app.post("/api/admin/create-group")
-def admin_group(req: AdminAction):
-    if req.user == ADMIN_USER and req.password == ADMIN_PASS:
-        supabase.table("chat_groups").insert({"group_name": req.target}).execute()
-        return {"status": "created"}
-    raise HTTPException(status_code=401)
-
-
 @app.post("/api/admin/clear")
 def admin_clear(req: AdminAction):
     if req.user == ADMIN_USER and req.password == ADMIN_PASS:
-        # Wipes all messages
         supabase.table("chat_messages").delete().gte("id", 0).execute()
         return {"status": "purged"}
     raise HTTPException(status_code=401)
@@ -131,6 +106,5 @@ def admin_clear(req: AdminAction):
 
 @app.get("/", response_class=HTMLResponse)
 async def read_index():
-    path = os.path.join(os.getcwd(), "static", "index.html")
-    with open(path, "r") as f:
+    with open("static/index.html", "r") as f:
         return f.read()

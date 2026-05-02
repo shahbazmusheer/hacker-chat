@@ -27,20 +27,19 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            height: 100vh;
             height: 100dvh;
         }
 
         /* Hacker Scrollbar */
-        #chat-box::-webkit-scrollbar {
+        ::-webkit-scrollbar {
             width: 4px;
         }
 
-        #chat-box::-webkit-scrollbar-track {
+        ::-webkit-scrollbar-track {
             background: #000;
         }
 
-        #chat-box::-webkit-scrollbar-thumb {
+        ::-webkit-scrollbar-thumb {
             background: var(--red);
             box-shadow: var(--glow);
             border-radius: 10px;
@@ -64,7 +63,7 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom) 10px;
+            padding: env(safe-area-inset-top) 15px env(safe-area-inset-bottom) 15px;
         }
 
         #header {
@@ -75,16 +74,17 @@
             border-bottom: 1px solid var(--red);
             flex-shrink: 0;
             background: var(--bg);
-            padding: 0 5px;
+            z-index: 10;
         }
 
         #chat-box {
             flex-grow: 1;
             overflow-y: auto;
-            padding: 10px 0;
+            padding: 15px 0;
             position: relative;
         }
 
+        /* Presence Area */
         #presence-panel {
             position: sticky;
             top: 0;
@@ -111,9 +111,9 @@
 
         /* Messages */
         .msg-container {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
             border-left: 2px solid #200;
-            padding-left: 10px;
+            padding-left: 12px;
             touch-action: pan-y;
         }
 
@@ -151,15 +151,15 @@
             word-break: break-word;
         }
 
-        /* Modals */
+        /* Transparent Modals (70% Opacity) */
         .overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
             z-index: 2000;
             display: flex;
             align-items: center;
@@ -167,11 +167,11 @@
         }
 
         .modal {
-            background: rgba(15, 0, 0, 0.85);
+            background: rgba(15, 0, 0, 0.7);
             border: 1px solid var(--red);
-            padding: 25px;
-            width: 90%;
-            max-width: 450px;
+            padding: 30px;
+            width: 92%;
+            max-width: 480px;
             text-align: center;
             box-shadow: var(--glow);
         }
@@ -180,7 +180,25 @@
             display: none !important;
         }
 
-        /* Input area */
+        /* Single Row Radio Fix */
+        .flex-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 15px 0;
+            color: #fff;
+            font-size: 0.9em;
+        }
+
+        .flex-row label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        /* Input Fixes */
         #input-container {
             flex-shrink: 0;
             padding-bottom: 10px;
@@ -190,21 +208,10 @@
 
         #reply-bar {
             display: none;
-            background: rgba(50, 0, 0, 0.4);
-            padding: 8px;
-            font-size: 0.85em;
+            background: rgba(60, 0, 0, 0.5);
+            padding: 10px;
             border-top: 1px solid red;
             color: #fff;
-        }
-
-        .reply-preview-text {
-            color: #888;
-            font-style: italic;
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-top: 2px;
         }
 
         .input-wrap {
@@ -239,8 +246,8 @@
             width: 100%;
             padding: 12px;
             margin-bottom: 10px;
-            outline: none;
             font-family: inherit;
+            outline: none;
         }
 
         .btn {
@@ -296,22 +303,22 @@
 </head>
 
 <body>
-    <div id="notif-area" style="position:fixed; bottom:100px; right:20px; z-index:5000;"></div>
+    <div id="notif-area" style="position:fixed; bottom:110px; right:20px; z-index:5000;"></div>
 
-    <!-- UI ALERTS -->
+    <!-- UI ALERTS (70% Trans) -->
     <div id="alert-overlay" class="overlay hidden" style="z-index: 6000;">
         <div class="modal">
             <h2 id="alert-title" style="color:#fff">SYSTEM_MSG</h2>
-            <p id="alert-msg"></p>
+            <p id="alert-msg" style="margin: 20px 0;"></p>
             <button class="btn" onclick="closeAlert()">ACKNOWLEDGE</button>
         </div>
     </div>
 
-    <!-- UI CONFIRM -->
+    <!-- UI CONFIRM (70% Trans) -->
     <div id="confirm-overlay" class="overlay hidden" style="z-index: 5500;">
         <div class="modal">
             <h2 style="color:#fff">!! WARNING !!</h2>
-            <p id="confirm-msg" style="color:#fff"></p>
+            <p id="confirm-msg" style="color:#fff; margin: 20px 0;"></p>
             <div style="display:flex; gap:10px;">
                 <button class="btn" id="confirm-exec">EXECUTE</button>
                 <button class="btn" onclick="closeConfirm()"
@@ -320,13 +327,13 @@
         </div>
     </div>
 
-    <!-- LOGIN -->
+    <!-- LOGIN (70% Trans) -->
     <div id="login-overlay" class="overlay">
         <div class="modal">
             <h2 style="color:#fff; letter-spacing: 2px;">UPLINK_INIT</h2>
             <input type="text" id="my-alias" placeholder="IDENT_CODE">
             <input type="text" id="target-id" placeholder="TARGET_NODE">
-            <div style="display:flex; justify-content:center; gap:20px; margin: 15px 0; color:#fff;">
+            <div class="flex-row">
                 <label><input type="radio" name="type" value="private" checked> PRIVATE</label>
                 <label><input type="radio" name="type" value="group"> GROUP</label>
             </div>
@@ -334,7 +341,7 @@
         </div>
     </div>
 
-    <!-- ADMIN -->
+    <!-- ADMIN (70% Trans) -->
     <div id="admin-overlay" class="overlay hidden" style="z-index:3000;">
         <div class="modal">
             <h2 style="color:#fff">ADMIN_CONSOLE</h2>
@@ -370,11 +377,13 @@
 
         <div id="reply-bar">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:bold;">REPLYING TO: <span id="reply-user"
+                <span style="font-weight:bold;">REPLYING_TO: <span id="reply-user"
                         style="color:var(--green);"></span></span>
-                <span onclick="cancelReply()" style="cursor:pointer; color:#fff;">[X]</span>
+                <span onclick="cancelReply()" style="cursor:pointer; color:#fff; font-weight:bold;">[X]</span>
             </div>
-            <span id="reply-preview-text" class="reply-preview-text"></span>
+            <div id="reply-preview-text"
+                style="color:#888; font-style:italic; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:3px;">
+            </div>
         </div>
 
         <div id="input-container">
@@ -448,16 +457,15 @@
             } else {
                 const online = current.includes(target);
                 document.getElementById('target-dot').className = `dot ${online ? 'dot-online' : 'dot-offline'}`;
-                document.getElementById('presence-list').innerText = online ? "TARGET_ONLINE" : "TARGET_OFFLINE";
             }
             activeList = current;
         }
 
         function setReply(s, c) {
+            // FIX: Explicitly refresh all reply fields on every selection
             replyData = { parent_sender: s, parent_content: c };
             document.getElementById('reply-user').innerText = s;
-            // Short message preview snippet
-            document.getElementById('reply-preview-text').innerText = c.length > 40 ? c.substring(0, 40) + "..." : c;
+            document.getElementById('reply-preview-text').innerText = c.length > 50 ? c.substring(0, 50) + "..." : c;
             document.getElementById('reply-bar').style.display = 'block';
             focusIn();
         }
@@ -465,7 +473,7 @@
         function cancelReply() { replyData = null; document.getElementById('reply-bar').style.display = 'none'; focusIn(); }
 
         document.getElementById('chat-in').addEventListener('keypress', async (e) => {
-            if (e.key === 'Enter' && e.target.value !== "") {
+            if (e.key === 'Enter' && e.target.value.trim() !== "") {
                 const val = e.target.value; e.target.value = "";
                 const payload = { sender: user, recipient: target, content: val, is_group: isGroup, ...replyData };
                 cancelReply(); await post('/api/send', payload); sync();
@@ -489,7 +497,7 @@
         async function adminPurge() {
             const u = document.getElementById('adm-user').value, p = document.getElementById('adm-pass').value;
             const d = await post('/api/admin/clear', { user: u, password: p });
-            if (d.status === "purged") { uiAlert("LOGS_WIPED"); document.getElementById('messages').innerHTML = ""; }
+            if (d.status === "purged") { uiAlert("LOGS_WIPED"); document.getElementById('messages').innerHTML = ""; lastId = 0; }
         }
     </script>
 </body>

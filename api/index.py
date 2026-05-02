@@ -8,13 +8,12 @@ import os
 
 app = FastAPI()
 
-# Configuration from Environment Variables
+# Config
 URL = os.environ.get("SUPABASE_URL")
 KEY = os.environ.get("SUPABASE_KEY")
 ADMIN_USER = os.environ.get("ADMIN_USER", "admin")
 ADMIN_PASS = os.environ.get("ADMIN_PASS", "hacker123")
 
-# Initialize Supabase
 supabase: Client = create_client(URL, KEY) if URL and KEY else None
 
 
@@ -34,19 +33,16 @@ class AdminAction(BaseModel):
 
 
 @app.get("/api/messages")
-def get_messages(user: str, target: str, is_group: bool, last_ts: Optional[str] = None):
+def get_messages(user: str, target: str, is_group: bool, last_id: Optional[int] = None):
     try:
-        # 1. Update Heartbeat & User Presence
+        # Heartbeat
         supabase.table("chat_users").upsert(
             {"username": user, "last_seen": "now()", "active_target": target}
         ).execute()
 
-        # 2. 48-Hour Auto-Cleanup
-        threshold = (datetime.now(timezone.utc) - timedelta(days=2)).isoformat()
-        supabase.table("chat_messages").delete().lt("created_at", threshold).execute()
-
-        # 3. Build Query
         query = supabase.table("chat_messages").select("*")
+
+        # Filtering logic
         if is_group:
             query = query.eq("recipient", target)
         else:
@@ -54,22 +50,21 @@ def get_messages(user: str, target: str, is_group: bool, last_ts: Optional[str] 
                 f"and(sender.eq.{user},recipient.eq.{target}),and(sender.eq.{target},recipient.eq.{user})"
             )
 
-        # 4. Delta Fetching Fix
-        if last_ts and last_ts != "null" and last_ts != "undefined":
-            query = query.gt("created_at", last_ts).order("created_at")
+        # ID-based Delta loading (Much more stable than timestamps)
+        if last_id and last_id > 0:
+            query = query.gt("id", last_id).order("id")
         else:
-            # First load: get last 50 messages
-            query = query.order("created_at", descending=True).limit(50)
+            query = query.order("id", descending=True).limit(50)
 
         res = query.execute()
         data = res.data
 
-        # Reverse if first load to maintain chronological order
-        if not last_ts or last_ts == "null":
+        if not last_id:
             data.reverse()
 
         return data
     except Exception as e:
+        print(f"Error: {e}")
         return []
 
 
@@ -78,8 +73,8 @@ def send_message(msg: Msg):
     try:
         supabase.table("chat_messages").insert(msg.dict()).execute()
         return {"status": "sent"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+    except:
+        return {"status": "error"}
 
 
 @app.get("/api/presence")
@@ -128,7 +123,7 @@ def admin_group(req: AdminAction):
 @app.post("/api/admin/clear")
 def admin_clear(req: AdminAction):
     if req.user == ADMIN_USER and req.password == ADMIN_PASS:
-        # Purge all messages gte 0
+        # Wipes all messages
         supabase.table("chat_messages").delete().gte("id", 0).execute()
         return {"status": "purged"}
     raise HTTPException(status_code=401)

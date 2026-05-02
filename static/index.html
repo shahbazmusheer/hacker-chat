@@ -29,19 +29,19 @@
             overflow: hidden;
             height: 100vh;
             height: 100dvh;
-            /* Dynamic viewport for mobile Chrome */
+            /* Essential for mobile Chrome address bar handling */
         }
 
         /* Hacker Scrollbar */
-        ::-webkit-scrollbar {
+        #chat-box::-webkit-scrollbar {
             width: 4px;
         }
 
-        ::-webkit-scrollbar-track {
+        #chat-box::-webkit-scrollbar-track {
             background: #000;
         }
 
-        ::-webkit-scrollbar-thumb {
+        #chat-box::-webkit-scrollbar-thumb {
             background: var(--red);
             box-shadow: var(--glow);
             border-radius: 10px;
@@ -65,11 +65,10 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            padding: env(safe-area-inset-top) 15px env(safe-area-inset-bottom) 15px;
-            position: relative;
+            padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom) 10px;
         }
 
-        /* Fixed Header */
+        /* Improved Header Layout */
         #header {
             display: flex;
             justify-content: space-between;
@@ -77,21 +76,16 @@
             height: 50px;
             border-bottom: 1px solid var(--red);
             flex-shrink: 0;
-            z-index: 10;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            padding: 20px;
-            left: 0;
+            background: var(--bg);
+            padding: 0 5px;
         }
 
         /* Chat Body */
         #chat-box {
             flex-grow: 1;
             overflow-y: auto;
-            padding: 15px 0;
+            padding: 10px 0;
             position: relative;
-            margin-top: 60px;
         }
 
         #presence-panel {
@@ -100,17 +94,18 @@
             float: right;
             text-align: right;
             pointer-events: none;
+            z-index: 5;
         }
 
         #presence-list {
             color: var(--green);
             font-weight: bold;
-            font-size: 1em;
+            font-size: 0.9em;
             text-shadow: 0 0 5px var(--green);
         }
 
         #event-log {
-            font-size: 0.85em;
+            font-size: 0.8em;
             height: 60px;
             overflow: hidden;
             opacity: 1;
@@ -119,9 +114,9 @@
 
         /* Messages */
         .msg-container {
-            margin-bottom: 18px;
+            margin-bottom: 15px;
             border-left: 2px solid #200;
-            padding-left: 12px;
+            padding-left: 10px;
             touch-action: pan-y;
         }
 
@@ -141,20 +136,20 @@
             cursor: pointer;
             color: var(--red);
             text-decoration: underline;
-            font-size: 0.85em;
+            font-size: 0.8em;
         }
 
         .reply-quote {
             background: rgba(255, 0, 0, 0.1);
             border-left: 2px solid #fff;
-            padding: 6px;
-            font-size: 0.85em;
+            padding: 5px;
+            font-size: 0.8em;
             color: #aaa;
             margin-bottom: 5px;
         }
 
         .content {
-            font-size: 1.1em;
+            font-size: 1.05em;
             color: var(--red);
             word-break: break-word;
         }
@@ -166,8 +161,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(1px);
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
             z-index: 2000;
             display: flex;
             align-items: center;
@@ -175,11 +170,11 @@
         }
 
         .modal {
-            background: rgba(15, 0, 0, 0.8);
+            background: rgba(15, 0, 0, 0.85);
             border: 1px solid var(--red);
-            padding: 30px;
-            width: 92%;
-            max-width: 480px;
+            padding: 25px;
+            width: 90%;
+            max-width: 450px;
             text-align: center;
             box-shadow: var(--glow);
         }
@@ -191,15 +186,15 @@
         .selector {
             display: flex;
             justify-content: center;
-            gap: 30px;
+            gap: 20px;
             margin: 15px 0;
             color: #fff;
         }
 
-        /* Input area */
+        /* Input area - FIXED SINGLE ROW LABEL */
         #input-container {
             flex-shrink: 0;
-            padding: 10px 0;
+            padding-bottom: 10px;
             border-top: 1px solid #200;
             background: var(--bg);
         }
@@ -208,7 +203,7 @@
             display: none;
             background: rgba(255, 0, 0, 0.15);
             padding: 8px;
-            font-size: 0.85em;
+            font-size: 0.8em;
             border-top: 1px solid red;
             color: #fff;
         }
@@ -216,9 +211,36 @@
         .input-wrap {
             display: flex;
             align-items: center;
+            width: 100%;
+            padding: 10px 0;
         }
 
-        input {
+        #chat-label {
+            white-space: nowrap;
+            /* Forces label to stay on one line */
+            flex-shrink: 0;
+            /* Prevents the label from squashing */
+            margin-right: 5px;
+            font-weight: bold;
+            max-width: 50%;
+            /* If username is massive, it won't kill the layout */
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        input#chat-in {
+            flex-grow: 1;
+            background: transparent;
+            border: none !important;
+            color: #fff;
+            font-family: inherit;
+            font-size: 1.1em;
+            outline: none;
+            padding: 0;
+        }
+
+        /* Modal Inputs */
+        .modal input {
             background: rgba(0, 0, 0, 0.5);
             border: 1px solid #333;
             color: #fff;
@@ -227,11 +249,6 @@
             padding: 12px;
             outline: none;
             margin-bottom: 10px;
-        }
-
-        input#chat-in {
-            margin-bottom: 0 !important;
-            border: none !important;
         }
 
         .btn {
@@ -346,10 +363,10 @@
 
     <div id="terminal">
         <div id="header">
-            <span style="font-weight:bold;">TARGET: <span id="chan-label" style="color:#fff">...</span> <span
-                    id="target-dot" class="dot hidden"></span></span>
+            <span style="font-weight:bold; font-size: 0.9em;">TARGET: <span id="chan-label"
+                    style="color:#fff">...</span> <span id="target-dot" class="dot hidden"></span></span>
             <button onclick="location.reload()"
-                style="background:none; border:1px solid #fff; color:#fff; cursor:pointer; font-size:0.7em; padding:4px 8px;">DISCONNECT</button>
+                style="background:none; border:1px solid #fff; color:#fff; cursor:pointer; font-size:0.75em; padding:4px 10px;">DISCONNECT</button>
         </div>
 
         <div id="chat-box">
@@ -367,7 +384,7 @@
 
         <div id="input-container">
             <div class="input-wrap">
-                <span id="chat-label" style="margin-right:10px; font-weight:bold;">></span>
+                <span id="chat-label" style="color:var(--red);"></span>
                 <input type="text" id="chat-in" placeholder="Command..." autofocus autocomplete="off">
             </div>
         </div>
@@ -376,7 +393,7 @@
     <script>
         let user = "", target = "", isGroup = false, lastId = 0, replyData = null, activeList = [];
 
-        function focusIn() { document.getElementById('chat-in').focus(); }
+        function focusIn() { setTimeout(() => document.getElementById('chat-in').focus(), 50); }
         function closeAlert() { document.getElementById('alert-overlay').classList.add('hidden'); focusIn(); }
         function closeConfirm() { document.getElementById('confirm-overlay').classList.add('hidden'); focusIn(); }
 
@@ -394,7 +411,8 @@
             isGroup = document.querySelector('input[name="type"]:checked').value === "group";
             if (!user || !target) return;
             document.getElementById('login-overlay').classList.add('hidden');
-            document.getElementById('chat-label').innerText = user + " > ";
+            // Ensure the prompt label stays inline
+            document.getElementById('chat-label').innerText = user.toUpperCase() + " > ";
             document.getElementById('chan-label').innerText = target;
             if (!isGroup) document.getElementById('target-dot').classList.remove('hidden');
             focusIn(); sync(); setInterval(sync, 2500);

@@ -4,13 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RED_LINE_ZETA_PRO</title>
+    <title>HACKER CHAT ZETA</title>
     <style>
         :root {
             --red: #ff0000;
-            --dark: #200;
-            --bg: #000;
+            --dark: #1a0000;
+            --bg: #050000;
             --green: #0f0;
+            --glow: 0 0 12px rgba(255, 0, 0, 0.6);
         }
 
         * {
@@ -27,26 +28,106 @@
             height: 100vh;
         }
 
+        /* CRT Scanline Effect */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
         #terminal {
-            height: 95vh;
+            height: 96vh;
             border: 1px solid var(--red);
             display: flex;
             flex-direction: column;
-            padding: 10px;
+            padding: 12px;
             position: relative;
+            box-shadow: 0 0 15px var(--dark);
+        }
+
+        /* Header Fixes */
+        #header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--red);
+            padding-bottom: 8px;
+            font-size: 0.9em;
+            align-items: center;
+        }
+
+        .btn-sm {
+            background: transparent;
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 2px 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.8em;
+        }
+
+        .btn-sm:hover {
+            background: #fff;
+            color: #000;
         }
 
         #chat-box {
             flex-grow: 1;
             overflow-y: auto;
-            margin-bottom: 5px;
+            margin: 10px 0;
         }
 
+        /* Transparent Hacker Modals */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal {
+            background: rgba(10, 0, 0, 0.8);
+            border: 1px solid var(--red);
+            padding: 25px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: var(--glow);
+            border-radius: 4px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Flex Selection */
+        .radio-flex {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 15px 0;
+            font-size: 0.9em;
+            color: #fff;
+        }
+
+        /* Message Styling */
         .msg-container {
             margin-bottom: 12px;
-            border-left: 2px solid #300;
-            padding-left: 10px;
-            position: relative;
+            border-left: 2px solid #200;
+            padding-left: 12px;
         }
 
         .usr {
@@ -57,11 +138,18 @@
         .ts {
             color: #500;
             font-size: 0.8em;
-            float: right;
+            margin: 0 10px;
+        }
+
+        .reply-link {
+            cursor: pointer;
+            color: var(--red);
+            text-decoration: underline;
+            font-size: 0.8em;
         }
 
         .reply-quote {
-            background: #111;
+            background: rgba(255, 255, 255, 0.05);
             border-left: 2px solid #fff;
             padding: 5px;
             font-size: 0.8em;
@@ -69,43 +157,9 @@
             margin-bottom: 5px;
         }
 
-        #presence-panel {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            text-align: right;
-            color: var(--green);
-            font-size: 0.9em;
-            pointer-events: none;
-        }
-
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            z-index: 2000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal {
-            border: 1px solid var(--red);
-            padding: 25px;
-            width: 90%;
-            max-width: 450px;
-            text-align: center;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        input {
-            background: #000;
+        input[type="text"],
+        input[type="password"] {
+            background: rgba(0, 0, 0, 0.5);
             border: 1px solid #333;
             color: #fff;
             font-family: inherit;
@@ -115,31 +169,41 @@
             outline: none;
         }
 
+        input:focus {
+            border-color: var(--red);
+        }
+
         .btn {
             background: var(--dark);
             color: var(--red);
             border: 1px solid var(--red);
-            padding: 8px 15px;
+            padding: 10px 20px;
             cursor: pointer;
             font-family: inherit;
             text-transform: uppercase;
-            margin: 5px;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: var(--red);
+            color: #000;
         }
     </style>
 </head>
 
 <body>
 
+    <!-- LOGIN MODAL -->
     <div id="login-overlay" class="overlay">
         <div class="modal">
-            <h2 style="color:#fff">UPLINK_REQUIRED</h2>
-            <input type="text" id="my-alias" placeholder="IDENTITY_CODE">
-            <input type="text" id="target-id" placeholder="TARGET_NODE">
-            <div style="margin: 10px 0;">
+            <h2 style="color:#fff; letter-spacing: 2px;">UPLINK_INIT</h2>
+            <input type="text" id="my-alias" placeholder="IDENT_CODE" autocomplete="off">
+            <input type="text" id="target-id" placeholder="TARGET_NODE" autocomplete="off">
+            <div class="radio-flex">
                 <label><input type="radio" name="type" value="private" checked> PRIVATE</label>
                 <label><input type="radio" name="type" value="group"> GROUP</label>
             </div>
-            <button class="btn" onclick="connect()" style="width: 100%;">ESTABLISH_CONNECTION</button>
+            <button class="btn" onclick="connect()" style="width: 100%;">ESTABLISH_UPLINK</button>
         </div>
     </div>
 
@@ -149,34 +213,29 @@
             <h2 style="color:#fff">ADMIN_CONSOLE</h2>
             <input type="text" id="adm-user" placeholder="ADMIN_ID">
             <input type="password" id="adm-pass" placeholder="PASSKEY">
-            <div id="admin-data"
-                style="height:150px; overflow-y:auto; background:#080000; color:var(--green); font-size:0.8em; text-align:left; padding:10px; margin-bottom:10px; border:1px solid #300;">
-                Awaiting login...</div>
-            <button class="btn" onclick="adminFetch()">STATS</button>
-            <button class="btn" onclick="adminPurge()" style="background:#500;">PURGE_LOGS</button>
-            <button class="btn" onclick="closeAdmin()">CLOSE</button>
+            <button class="btn" onclick="adminPurge()" style="background:#500; width:100%;">PURGE_LOGS</button>
+            <button class="btn" onclick="closeAdmin()"
+                style="width:100%; border-color:#fff; color:#fff;">BACK_TO_TERMINAL</button>
         </div>
     </div>
 
     <div id="terminal">
-        <div id="presence-panel">
-            <div id="presence-list">SCANNING...</div>
-            <div id="target-status"></div>
+        <div id="header">
+            <span>TARGET: <span id="chan-label" style="color:#fff;">...</span></span>
+            <button onclick="location.reload()" class="btn-sm">DISCONNECT</button>
         </div>
-        <div style="border-bottom: 1px solid #300; padding-bottom: 5px; font-size: 0.8em;">
-            TARGET: <span id="chan-label">...</span> | CTRL+SHIFT+X FOR ADMIN
-        </div>
-        <div id="chat-box">
-            <div class="msg-container" style="color:#fff;">[SYSTEM] Uplink initialized. Waiting for data...</div>
-        </div>
+
+        <div id="chat-box"></div>
+
         <div id="reply-preview" class="hidden"
-            style="background:#200; padding:5px; font-size:0.8em; border-top:1px solid red;">
-            Replying to <span id="reply-to"></span>... <span onclick="cancelReply()"
-                style="float:right; cursor:pointer;">[X]</span>
+            style="background:rgba(255,0,0,0.1); padding:8px; font-size:0.8em; border-top:1px solid red;">
+            Replying to <span id="reply-to" style="color:#fff;"></span>... <span onclick="cancelReply()"
+                style="float:right; cursor:pointer; color:#fff;">[CANCEL]</span>
         </div>
+
         <div style="border-top:1px solid #200; padding-top:10px; display:flex;">
             <span style="margin-right:10px; font-weight:bold;">></span>
-            <input type="text" id="chat-in" placeholder="Message..." autofocus autocomplete="off">
+            <input type="text" id="chat-in" placeholder="Command..." autofocus autocomplete="off">
         </div>
     </div>
 
@@ -190,6 +249,7 @@
             if (!user || !target) return;
             document.getElementById('login-overlay').classList.add('hidden');
             document.getElementById('chan-label').innerText = target;
+            document.getElementById('chat-in').focus(); // Autofocus after login
             sync();
             setInterval(sync, 2500);
         }
@@ -202,34 +262,27 @@
                     const box = document.getElementById('chat-box');
                     data.forEach(m => {
                         if (document.getElementById(`msg-${m.id}`)) return;
-
                         const div = document.createElement('div');
                         div.className = 'msg-container';
                         div.id = `msg-${m.id}`;
 
-                        // Fix Invalid Date bug
-                        let time = "";
-                        if (m.created_at) {
-                            time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        }
-
+                        let time = m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
                         let p = m.parent_content ? `<div class="reply-quote">${m.parent_sender}: ${m.parent_content}</div>` : '';
 
                         div.innerHTML = `
                         <div class="usr">
-                            ${m.sender} 
-                            <span class="ts">${time}</span> 
-                            ${m.id > 0 ? `<span style="cursor:pointer; color:red;" onclick="setReply('${m.sender}','${m.content}')">[reply]</span>` : ''}
+                            ${m.sender} <span class="ts">${time}</span> 
+                            <span class="reply-link" onclick="setReply('${m.sender}','${m.content}')">[reply]</span>
                         </div>
                         ${p}
-                        <div style="color:red;">${m.content}</div>`;
+                        <div style="color:red; margin-top:3px;">${m.content}</div>`;
 
                         box.appendChild(div);
                         if (m.id > lastId) lastId = m.id;
                     });
                     box.scrollTop = box.scrollHeight;
                 }
-            } catch (e) { console.error(e); }
+            } catch (e) { }
         }
 
         function setReply(s, c) {
@@ -239,7 +292,11 @@
             document.getElementById('chat-in').focus();
         }
 
-        function cancelReply() { replyData = null; document.getElementById('reply-preview').classList.add('hidden'); }
+        function cancelReply() {
+            replyData = null;
+            document.getElementById('reply-preview').classList.add('hidden');
+            document.getElementById('chat-in').focus();
+        }
 
         document.getElementById('chat-in').addEventListener('keypress', async (e) => {
             if (e.key === 'Enter' && e.target.value !== "") {
@@ -251,21 +308,23 @@
             }
         });
 
-        // Admin Shortcut
         window.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.shiftKey && e.code === 'KeyX') document.getElementById('admin-overlay').classList.remove('hidden');
+            if (e.ctrlKey && e.shiftKey && e.code === 'KeyX') {
+                document.getElementById('admin-overlay').classList.remove('hidden');
+            }
         });
 
-        async function adminFetch() {
-            const u = document.getElementById('adm-user').value, p = document.getElementById('adm-pass').value;
-            const res = await fetch('/api/admin/stats', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user: u, password: p }) });
-            if (res.status === 200) {
-                const d = await res.json();
-                document.getElementById('admin-data').innerHTML = `<b>ACTIVE:</b> ${d.users.map(x => x.username).join(', ')}`;
-            } else { alert("AUTH_FAIL"); }
+        function closeAdmin() {
+            document.getElementById('admin-overlay').classList.add('hidden');
+            document.getElementById('chat-in').focus(); // Autofocus after admin close
         }
 
-        function closeAdmin() { document.getElementById('admin-overlay').classList.add('hidden'); }
+        async function adminPurge() {
+            const u = document.getElementById('adm-user').value, p = document.getElementById('adm-pass').value;
+            const res = await fetch('/api/admin/clear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user: u, password: p }) });
+            if (res.status === 200) { alert("PURGE_COMPLETE"); lastId = 0; document.getElementById('chat-box').innerHTML = ""; closeAdmin(); }
+            else { alert("AUTH_FAILED"); }
+        }
     </script>
 </body>
 

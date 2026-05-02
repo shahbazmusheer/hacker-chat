@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HACKER CHAT ZETA</title>
+    <title>RED_LINE_ZETA_v5.1</title>
     <style>
         :root {
             --red: #ff0000;
@@ -29,7 +29,6 @@
             height: 100vh;
         }
 
-        /* CRT Effect */
         body::after {
             content: "";
             position: fixed;
@@ -49,7 +48,6 @@
             flex-direction: column;
             padding: 10px;
             position: relative;
-            border: 1px solid var(--dark);
         }
 
         /* Header */
@@ -58,16 +56,41 @@
             justify-content: space-between;
             border-bottom: 1px solid var(--red);
             padding-bottom: 5px;
-            font-size: 0.8em;
+            font-size: 0.85em;
             align-items: center;
         }
 
-        #private-dot {
+        .dot {
             height: 10px;
             width: 10px;
             border-radius: 50%;
             display: inline-block;
-            margin-left: 5px;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .dot-online {
+            background: var(--green);
+            box-shadow: 0 0 10px var(--green);
+            animation: pulse 1s infinite;
+        }
+
+        .dot-offline {
+            background: #400;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+
+            100% {
+                opacity: 1;
+            }
         }
 
         /* Chat Body */
@@ -78,33 +101,53 @@
             position: relative;
         }
 
-        #floating-nodes {
+        #presence-panel {
             position: sticky;
             top: 0;
             float: right;
-            color: var(--green);
-            font-size: 1em;
-            font-weight: bold;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 5px;
+            width: 220px;
             z-index: 100;
-            text-shadow: 0 0 5px var(--green);
+            text-align: right;
+            pointer-events: none;
         }
 
+        #presence-list {
+            color: var(--green);
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        #event-log {
+            font-size: 0.9em;
+            height: 80px;
+            overflow: hidden;
+            opacity: 1;
+            font-weight: bold;
+        }
+
+        .log-join {
+            color: var(--green);
+        }
+
+        .log-left {
+            color: var(--red);
+        }
+
+        /* Messages */
         .msg-container {
-            margin-bottom: 12px;
-            touch-action: pan-y;
-            position: relative;
+            margin-bottom: 15px;
             border-left: 2px solid var(--dark);
-            padding-left: 10px;
-            transition: transform 0.2s;
+            padding-left: 12px;
+            position: relative;
+            touch-action: pan-y;
         }
 
         .msg-header {
             display: flex;
             justify-content: space-between;
-            font-size: 0.75em;
-            margin-bottom: 3px;
+            font-size: 0.8em;
+            margin-bottom: 4px;
         }
 
         .usr {
@@ -114,40 +157,44 @@
 
         .ts {
             color: #500;
-            font-size: 0.9em;
         }
 
         .dots {
             color: var(--red);
             cursor: pointer;
             padding: 0 5px;
+            text-decoration: underline;
         }
 
-        /* Reply Logic UI */
         .reply-quote {
             background: #150000;
             border-left: 2px solid #fff;
             padding: 5px;
-            font-size: 0.8em;
+            font-size: 0.85em;
             color: #aaa;
             margin-bottom: 5px;
         }
 
+        .content {
+            font-size: 1.05em;
+            color: var(--red);
+        }
+
+        /* Input and Reply Preview */
         #reply-preview {
             display: none;
             background: #200;
             border-top: 1px solid var(--red);
             padding: 8px;
-            font-size: 0.85em;
+            font-size: 0.9em;
             color: #fff;
         }
 
-        /* Input Area */
         #input-area {
             display: flex;
             align-items: center;
             border-top: 1px solid #200;
-            padding: 5px 0;
+            padding: 8px 0;
         }
 
         input[type="text"] {
@@ -200,7 +247,7 @@
         }
 
         .admin-data {
-            height: 150px;
+            height: 180px;
             overflow-y: auto;
             background: #080000;
             border: 1px solid #300;
@@ -211,7 +258,6 @@
             margin-bottom: 10px;
         }
 
-        /* Notifications */
         #notif-area {
             position: fixed;
             bottom: 80px;
@@ -223,9 +269,10 @@
             background: #100;
             border: 1px solid var(--red);
             color: #fff;
-            padding: 10px;
-            margin-top: 5px;
-            font-size: 0.8em;
+            padding: 12px;
+            margin-top: 8px;
+            font-size: 0.9em;
+            box-shadow: var(--glow);
             animation: slide 0.3s;
         }
 
@@ -246,7 +293,7 @@
     <div id="notif-area"></div>
 
     <!-- CONFIRMATION -->
-    <div id="confirm-overlay" class="overlay hidden">
+    <div id="confirm-overlay" class="overlay hidden" style="z-index: 4000;">
         <div class="modal">
             <h2 style="color:#fff">CRITICAL_WARNING</h2>
             <p id="confirm-msg" style="color:#fff">EXECUTE DESTRUCTIVE COMMAND?</p>
@@ -271,38 +318,41 @@
         </div>
     </div>
 
-    <!-- ADMIN CONSOLE -->
-    <div id="admin-overlay" class="overlay hidden" style="z-index: 2500;">
+    <!-- ADMIN CONSOLE (Ctrl+Shift+X) -->
+    <div id="admin-overlay" class="overlay hidden" style="z-index: 3000;">
         <div class="modal">
-            <h2 style="color:#fff">ADMIN_v5_CONSOLE</h2>
+            <h2 style="color:#fff">ADMIN_CONSOLE</h2>
             <div style="display:flex; gap:5px; margin-bottom:10px;">
                 <input type="text" id="adm-user" placeholder="ADMIN_ID"
                     style="width:50%; border:1px solid #333; background:#000; color:#fff;">
                 <input type="password" id="adm-pass" placeholder="PASSKEY"
                     style="width:50%; border:1px solid #333; background:#000; color:#fff;">
             </div>
-            <div id="admin-data" class="admin-data">SECURE_AUTH_REQUIRED...</div>
+            <div id="admin-data" class="admin-data">Authorization required...</div>
             <button class="btn" onclick="adminFetch()">STATS</button>
-            <button class="btn" onclick="triggerPurge()" style="background:#500;">PURGE_LOGS</button>
+            <button class="btn" onclick="triggerPurge()" style="background:#600;">PURGE_LOGS</button>
             <hr border="1" color="#200">
-            <input type="text" id="new-group" placeholder="GROUP_ID"
+            <input type="text" id="new-group" placeholder="NEW_GROUP_ID"
                 style="width:60%; border:1px solid #333; background:#000; color:#fff;">
             <button class="btn" onclick="adminCreateGroup()">CREATE</button>
             <br><br>
-            <button onclick="closeAdmin()" style="background:none; color:#444; border:none; cursor:pointer;">[
-                CLOSE_CONSOLE ]</button>
+            <button onclick="closeAdmin()" style="background:none; color:#444; border:none; cursor:pointer;">[ EXIT
+                ]</button>
         </div>
     </div>
 
     <div id="terminal">
         <div id="header">
-            <span>TARGET: <span id="chan-label">...</span> <span id="private-dot"></span></span>
+            <span>TARGET: <span id="chan-label">...</span> <span id="target-dot" class="dot hidden"></span></span>
             <a href="javascript:location.reload()"
-                style="color:#fff; text-decoration:none; border:1px solid #fff; padding:2px 5px;">DISCONNECT</a>
+                style="color:#fff; text-decoration:none; border:1px solid #fff; padding:2px 5px; font-size:0.8em;">DISCONNECT</a>
         </div>
 
         <div id="chat-box">
-            <div id="floating-nodes" class="hidden">ACTIVE_NODES: 0</div>
+            <div id="presence-panel">
+                <div id="presence-list">SCANNING...</div>
+                <div id="event-log"></div>
+            </div>
             <div id="messages"></div>
         </div>
 
@@ -320,7 +370,7 @@
     </div>
 
     <script>
-        let user = "", target = "", isGroup = false, lastTimestamp = null, replyData = null;
+        let user = "", target = "", isGroup = false, lastTimestamp = null, replyData = null, activeUsers = [];
 
         function notify(t, s = "info") {
             const n = document.createElement('div'); n.className = 'toast';
@@ -340,11 +390,11 @@
             user = document.getElementById('my-alias').value.trim();
             target = document.getElementById('target-id').value.trim();
             isGroup = document.querySelector('input[name="type"]:checked').value === "group";
-            if (!user || !target) return notify("CREDENTIALS_REQUIRED", "fail");
+            if (!user || !target) return notify("IDENT_REQUIRED", "fail");
 
             document.getElementById('login-overlay').classList.add('hidden');
             document.getElementById('chan-label').innerText = target;
-            if (isGroup) document.getElementById('floating-nodes').classList.remove('hidden');
+            if (!isGroup) document.getElementById('target-dot').classList.remove('hidden');
 
             sync();
             setInterval(sync, 2500);
@@ -354,46 +404,61 @@
 
         async function sync() {
             let url = `/api/messages?user=${user}&target=${target}&is_group=${isGroup}`;
-            if (lastTimestamp) url += `&last_ts=${lastTimestamp}`;
+            if (lastTimestamp) url += `&last_ts=${encodeURIComponent(lastTimestamp)}`;
 
-            const res = await fetch(url);
-            const data = await res.json();
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data && data.length > 0) {
+                    const container = document.getElementById('messages');
+                    data.forEach(m => {
+                        if (document.getElementById(`msg-${m.id}`)) return;
+                        const div = document.createElement('div');
+                        div.className = 'msg-container';
+                        div.id = `msg-${m.id}`;
 
-            if (data.length > 0) {
-                const container = document.getElementById('messages');
-                data.forEach(m => {
-                    const div = document.createElement('div'); div.className = 'msg-container';
-                    const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                    // Swipe to reply logic
-                    let startX = 0;
-                    div.addEventListener('touchstart', e => startX = e.touches[0].clientX);
-                    div.addEventListener('touchend', e => { if (e.changedTouches[0].clientX - startX > 60) setReply(m.sender, m.content); });
+                        // Swipe logic
+                        let startX = 0;
+                        div.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+                        div.addEventListener('touchend', e => { if (e.changedTouches[0].clientX - startX > 60) setReply(m.sender, m.content); });
 
-                    let parentHtml = m.parent_content ? `<div class="reply-quote">${m.parent_sender}: ${m.parent_content}</div>` : '';
+                        let parentHtml = m.parent_content ? `<div class="reply-quote">${m.parent_sender}: ${m.parent_content}</div>` : '';
 
-                    div.innerHTML = `
-                    <div class="msg-header">
-                        <span class="usr">${m.sender}</span>
-                        <span><span class="dots" onclick="setReply('${m.sender}','${m.content}')">[reply]</span> <span class="ts">${time}</span></span>
-                    </div>
-                    ${parentHtml}
-                    <div style="color:var(--red);">${m.content}</div>`;
-                    container.appendChild(div);
-                    lastTimestamp = m.created_at;
-                });
-                document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
-            }
+                        div.innerHTML = `
+                        <div class="msg-header">
+                            <span class="usr">${m.sender}</span>
+                            <span><span class="dots" onclick="setReply('${m.sender}','${m.content}')">[reply]</span> <span class="ts">${time}</span></span>
+                        </div>
+                        ${parentHtml}
+                        <div class="content">${m.content}</div>`;
+                        container.appendChild(div);
+                        lastTimestamp = m.created_at;
+                    });
+                    document.getElementById('chat-box').scrollTop = document.getElementById('chat-box').scrollHeight;
+                }
+            } catch (e) { }
         }
 
         async function updatePresence() {
             const res = await fetch(`/api/presence?target=${target}&is_group=${isGroup}&requester=${user}`);
-            const active = await res.json();
-            if (isGroup) document.getElementById('floating-nodes').innerText = `ACTIVE_NODES: ${active.length}`;
-            else {
-                const dot = document.getElementById('private-dot');
-                dot.className = active.includes(target) ? 'dot-online' : 'dot-offline';
+            const current = await res.json();
+            if (isGroup) {
+                handleEvents(current);
+                document.getElementById('presence-list').innerText = `ACTIVE_NODES: ${current.length}`;
+            } else {
+                const online = current.includes(target);
+                document.getElementById('target-dot').className = `dot ${online ? 'dot-online' : 'dot-offline'}`;
+                document.getElementById('presence-list').innerText = online ? "TARGET_ONLINE" : "TARGET_OFFLINE";
             }
+            activeUsers = current;
+        }
+
+        function handleEvents(newList) {
+            const log = document.getElementById('event-log');
+            newList.forEach(u => { if (!activeUsers.includes(u) && u !== user) log.innerHTML = `<div class="log-join">> ${u} UPLINK_ESTABLISHED</div>` + log.innerHTML; });
+            activeUsers.forEach(u => { if (!newList.includes(u) && u !== user) log.innerHTML = `<div class="log-left">> ${u} CONNECTION_LOST</div>` + log.innerHTML; });
         }
 
         function setReply(s, c) {
@@ -415,7 +480,6 @@
             }
         });
 
-        // ADMIN 
         window.addEventListener('keydown', (e) => { if (e.ctrlKey && e.shiftKey && e.code === 'KeyX') document.getElementById('admin-overlay').classList.toggle('hidden'); });
         function closeAdmin() { document.getElementById('admin-overlay').classList.add('hidden'); }
 
@@ -424,16 +488,16 @@
             const res = await fetch('/api/admin/stats', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user: u, password: p }) });
             if (res.status === 200) {
                 const d = await res.json();
-                document.getElementById('admin-data').innerHTML = `<b>NODES:</b><br>${d.users.map(x => x.username).join(', ')}<br><br><b>GROUPS:</b><br>${d.groups.map(x => x.group_name).join(', ')}`;
-                notify("AUTH_SUCCESS", "success");
-            } else notify("DENIED", "fail");
+                document.getElementById('admin-data').innerHTML = `<b>ACTIVE:</b> ${d.users.map(x => x.username).join(', ')}<br><br><b>GROUPS:</b> ${d.groups.map(x => x.group_name).join(', ')}`;
+                notify("AUTH_GRANTED", "success");
+            } else notify("AUTH_DENIED", "fail");
         }
 
-        function triggerPurge() { hConfirm("PURGE ALL DATABASE LOGS?", adminPurge); }
+        function triggerPurge() { hConfirm("PURGE ALL LOGS?", adminPurge); }
         async function adminPurge() {
             const u = document.getElementById('adm-user').value, p = document.getElementById('adm-pass').value;
             const res = await fetch('/api/admin/clear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user: u, password: p }) });
-            if (res.status === 200) { notify("WIPE_COMPLETE", "success"); sync(); } else notify("WIPE_DENIED", "fail");
+            if (res.status === 200) { notify("LOGS_WIPED", "success"); sync(); } else notify("WIPE_DENIED", "fail");
         }
 
         async function adminCreateGroup() {

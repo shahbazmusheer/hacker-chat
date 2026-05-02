@@ -8,7 +8,6 @@ import os
 
 app = FastAPI()
 
-# Config
 URL = os.environ.get("SUPABASE_URL")
 KEY = os.environ.get("SUPABASE_KEY")
 ADMIN_USER = os.environ.get("ADMIN_USER", "admin")
@@ -17,7 +16,6 @@ ADMIN_PASS = os.environ.get("ADMIN_PASS", "hacker123")
 supabase: Client = create_client(URL, KEY) if URL and KEY else None
 
 
-# --- REQUEST MODELS ---
 class MessageRequest(BaseModel):
     user: str
     target: str
@@ -46,18 +44,12 @@ class AdminAction(BaseModel):
     target: Optional[str] = None
 
 
-# --- API ENDPOINTS (ALL POST) ---
-
-
 @app.post("/api/messages")
 def fetch_messages(req: MessageRequest):
     try:
-        # Heartbeat update
         supabase.table("chat_users").upsert(
             {"username": req.user, "last_seen": "now()", "active_target": req.target}
         ).execute()
-
-        # Build Query
         query = supabase.table("chat_messages").select("*")
         if req.is_group:
             query = query.eq("recipient", req.target)
@@ -116,7 +108,6 @@ def fetch_presence(req: PresenceRequest):
 @app.post("/api/admin/stats")
 def admin_stats(req: AdminAction):
     if req.user == ADMIN_USER and req.password == ADMIN_PASS:
-        # Get last 10 users and groups
         u = (
             supabase.table("chat_users")
             .select("*")
@@ -147,6 +138,5 @@ def admin_clear(req: AdminAction):
 
 @app.get("/", response_class=HTMLResponse)
 async def read_index():
-    path = os.path.join(os.getcwd(), "static", "index.html")
-    with open(path, "r") as f:
+    with open("static/index.html", "r") as f:
         return f.read()

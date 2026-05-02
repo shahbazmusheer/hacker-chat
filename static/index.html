@@ -367,7 +367,7 @@
 
         <div id="input-container">
             <div class="input-wrap">
-                <span style="margin-right:10px; font-weight:bold;">></span>
+                <span id="chat-label" style="margin-right:10px; font-weight:bold;">></span>
                 <input type="text" id="chat-in" placeholder="Command..." autofocus autocomplete="off">
             </div>
         </div>
@@ -394,6 +394,7 @@
             isGroup = document.querySelector('input[name="type"]:checked').value === "group";
             if (!user || !target) return;
             document.getElementById('login-overlay').classList.add('hidden');
+            document.getElementById('chat-label').innerText = user + " > ";
             document.getElementById('chan-label').innerText = target;
             if (!isGroup) document.getElementById('target-dot').classList.remove('hidden');
             focusIn(); sync(); setInterval(sync, 2500);

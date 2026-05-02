@@ -330,7 +330,17 @@
     <!-- LOGIN (70% Trans) -->
     <div id="login-overlay" class="overlay">
         <div class="modal">
-            <h2 style="color:#fff; letter-spacing: 2px;">UPLINK_INIT</h2>
+            <h2 style="color:#fff; letter-spacing: 2px; margin-bottom: 10px;">UPLINK_INIT</h2>
+
+            <!-- NEW CONCISE DESCRIPTION -->
+            <div
+                style="font-size: 0.75em; color: #888; text-align: left; margin-bottom: 20px; line-height: 1.4; border: 1px solid #300; padding: 10px; background: rgba(0,0,0,0.3);">
+                [SYSTEM_MANUAL]<br>
+                > <b style="color:var(--red)">IDENT_CODE:</b> Your unique hacker alias for this session.<br>
+                > <b style="color:var(--red)">TARGET_NODE:</b> Recipient's alias (Private) or Group name.<br>
+                > <b style="color:var(--red)">PROTOCOL:</b> All uplink logs self-destruct after 48 hours.
+            </div>
+
             <input type="text" id="my-alias" placeholder="IDENT_CODE">
             <input type="text" id="target-id" placeholder="TARGET_NODE">
             <div class="flex-row">
@@ -340,6 +350,7 @@
             <button class="btn" onclick="connect()">ESTABLISH_UPLINK</button>
         </div>
     </div>
+
 
     <!-- ADMIN (70% Trans) -->
     <div id="admin-overlay" class="overlay hidden" style="z-index:3000;">

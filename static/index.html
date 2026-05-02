@@ -202,12 +202,28 @@
                     const box = document.getElementById('chat-box');
                     data.forEach(m => {
                         if (document.getElementById(`msg-${m.id}`)) return;
+
                         const div = document.createElement('div');
                         div.className = 'msg-container';
                         div.id = `msg-${m.id}`;
-                        const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                        // Fix Invalid Date bug
+                        let time = "";
+                        if (m.created_at) {
+                            time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        }
+
                         let p = m.parent_content ? `<div class="reply-quote">${m.parent_sender}: ${m.parent_content}</div>` : '';
-                        div.innerHTML = `<div class="usr">${m.sender} <span class="ts">${time}</span> <span style="cursor:pointer; color:red;" onclick="setReply('${m.sender}','${m.content}')">[reply]</span></div>${p}<div style="color:red;">${m.content}</div>`;
+
+                        div.innerHTML = `
+                        <div class="usr">
+                            ${m.sender} 
+                            <span class="ts">${time}</span> 
+                            ${m.id > 0 ? `<span style="cursor:pointer; color:red;" onclick="setReply('${m.sender}','${m.content}')">[reply]</span>` : ''}
+                        </div>
+                        ${p}
+                        <div style="color:red;">${m.content}</div>`;
+
                         box.appendChild(div);
                         if (m.id > lastId) lastId = m.id;
                     });

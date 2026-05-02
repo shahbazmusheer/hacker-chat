@@ -52,14 +52,18 @@ def get_messages(user: str, target: str, is_group: bool, last_id: int = 0):
 
         # Load only new messages
         if last_id > 0:
+            # Fixed .order() syntax
             res = query.gt("id", last_id).order("id").execute()
+            return res.data
         else:
-            res = query.order("id", descending=True).limit(50).execute()
-            res.data.reverse()
-
-        return res.data
+            # Fixed .order() syntax (using desc=True)
+            res = query.order("id", desc=True).limit(50).execute()
+            data = res.data
+            data.reverse()
+            return data
     except Exception as e:
-        return [{"sender": "SYSTEM", "content": f"DATABASE_ERROR: {str(e)}"}]
+        # Return error as a list so the frontend can display it
+        return [{"sender": "SYSTEM", "content": f"ERR: {str(e)}", "id": 0}]
 
 
 @app.post("/api/send")
@@ -74,7 +78,6 @@ def send_message(msg: Msg):
 @app.get("/api/presence")
 def get_presence(target: str, is_group: bool, requester: str):
     try:
-        # 15 second threshold
         res = (
             supabase.table("chat_users")
             .select("username")
@@ -86,7 +89,6 @@ def get_presence(target: str, is_group: bool, requester: str):
         return []
 
 
-# Admin Panel Functions
 @app.post("/api/admin/stats")
 def admin_stats(req: AdminAction):
     if req.user == ADMIN_USER and req.password == ADMIN_PASS:
@@ -106,5 +108,6 @@ def admin_clear(req: AdminAction):
 
 @app.get("/", response_class=HTMLResponse)
 async def read_index():
-    with open("static/index.html", "r") as f:
+    path = os.path.join(os.getcwd(), "static", "index.html")
+    with open(path, "r") as f:
         return f.read()
